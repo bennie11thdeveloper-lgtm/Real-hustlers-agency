@@ -10,16 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/supabase-js": "^2.117.3",
     "@uploadthing/react": "latest",
-    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "uploadthing": "latest"
+    "uploadthing": "latest",
+    "vite": "latest"
   },
-  "devDependencies": {},
   "overrides": {
     "effect": "3.22.2"
   }

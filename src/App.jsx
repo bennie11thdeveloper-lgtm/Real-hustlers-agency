@@ -20,6 +20,7 @@ import Home from './sections/Home.jsx';
 import HowItWorks from './sections/HowItWorks.jsx';
 import Opportunities from './sections/Opportunities.jsx';
 import { useSiteContent } from './useSiteContent.js';
+import { supabase } from './supabaseClient.js'
 
 const { useUploadThing } = generateReactHelpers({ url: uploadThingUrl });
 const roleDesigns = [
