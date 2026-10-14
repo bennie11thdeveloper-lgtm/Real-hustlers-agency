@@ -1,0 +1,15 @@
+.admin-login { width: min(100%, 475px); margin: 25px auto; padding: 35px; border: 1px solid #e3e6dc; background: #fff; }
+.admin-badge { display: inline-flex; align-items: center; gap: 8px; color: #718a41; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+.admin-login h1 { margin: 22px 0 12px; font-size: clamp(37px, 6vw, 56px); line-height: 1.03; letter-spacing: -3px; }
+.admin-login > p { color: #6d766d; font-size: 12px; line-height: 1.85; }
+.admin-login-form { margin-top: 24px; display: grid; gap: 15px; }
+.admin-login-form label { display: grid; gap: 7px; font-size: 10px; font-weight: 700; text-transform: capitalize; }
+.admin-login-form input { min-height: 43px; padding: 10px; border: 1px solid #dfe2d8; background: #fbfbf7; font-size: 12px; }
+.admin-login-form .button { width: fit-content; margin-top: 5px; }
+.admin-login-form .admin-reset { font-size: 10px; text-decoration: underline; }
+.admin-reset { width: fit-content; padding: 8px 0; display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: #58665a; cursor: pointer; font-size: 11px; font-weight: 700; }
+.admin-back-link { margin-top: 24px; display: inline-flex; align-items: center; gap: 7px; color: #66725f; font-size: 10px; font-weight: 700; }
+
+@media (max-width: 620px) {
+  .admin-login { padding: 26px 21px; }
+}

@@ -1,0 +1,29 @@
+.journey { padding: 70px 8.5%; background: var(--forest); color: #f6f6f0; display: grid; grid-template-columns: .8fr 1fr; gap: 8%; }
+.journey .eyebrow { color: #b6c6ab; }
+.journey .eyebrow { margin-bottom: 17px; }
+.journey h2 { margin: 0; font-size: clamp(42px,5vw,60px); line-height: 1.04; letter-spacing: -3.5px; }
+.journey h2 span { color: var(--lime); }
+.journey-side > p:not(.eyebrow) { max-width: 315px; margin: 16px 0 18px; color: #ccd4c8; font-size: 11px; line-height: 1.9; }
+.journey .button { min-height: 43px; padding: 0 16px; gap: 12px; font-size: 10px; }
+.steps-list { padding-top: 3px; }
+.step-row { min-height: 92px; padding: 16px 0; border-bottom: 1px solid #ffffff28; display: grid; grid-template-columns: 41px 1fr 20px; align-items: start; gap: 10px; }
+.step-number { padding-top: 3px; color: var(--lime); font: 600 11px var(--display); }
+.step-row h3 { margin: 0 0 7px; font: 700 14px var(--display); }
+.step-row p { max-width: 355px; margin: 0; color: #c6d0c4; font-size: 10px; line-height: 1.8; }
+.step-chevron { margin-top: 2px; color: #cad7bd; transform: rotate(-90deg); }
+.journey-note { margin-top: 17px; display: flex; align-items: center; gap: 9px; color: #d7e7ad; font-size: 9px; line-height: 1.6; }
+.journey-note svg { flex: none; color: var(--lime); }
+
+@media (max-width: 900px) {
+  .journey { padding-left: 7%; padding-right: 7%; gap: 5%; }
+}
+
+@media (max-width: 620px) {
+  .journey { padding: 48px 6% 45px; grid-template-columns: 1fr; gap: 28px; }
+  .journey h2 { font-size: 50px; letter-spacing: -3px; }
+  .journey-side > p:not(.eyebrow) { font-size: 10px; }
+  .step-row { min-height: 86px; padding: 14px 0; grid-template-columns: 31px 1fr 17px; gap: 8px; }
+  .step-row h3 { font-size: 13px; }
+  .step-row p { font-size: 9px; }
+  .journey-note { align-items: flex-start; font-size: 8px; }
+}

@@ -1,0 +1,11 @@
+[functions.submit-application]
+verify_jwt = false
+
+[functions.payment-status]
+verify_jwt = false
+
+[functions.uploadthing]
+verify_jwt = false
+
+[functions.flutterwave-webhook]
+verify_jwt = false

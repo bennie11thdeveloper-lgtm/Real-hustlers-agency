@@ -1,0 +1,31 @@
+.site-header { height: 84px; padding: 0 7.05%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e7e8df; position: relative; z-index: 5; background: var(--paper); }
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand-logo { width: 46px; height: 46px; display: block; flex: none; object-fit: contain; }
+.brand-name { font: 800 9px/1.17 var(--display); letter-spacing: .65px; }
+.site-header .brand-logo { width: 65px; height: 65px; }
+.site-header .brand-name { font: 700 20px/1.05 'Lilita One', var(--display); letter-spacing: .8px; }
+.main-nav { display: flex; gap: 37px; align-items: center; font-size: 12px; font-weight: 600; }
+.main-nav > a { transition: opacity .2s; }
+.main-nav > a:hover { opacity: .6; }
+.nav-cta { min-height: 41px; padding: 0 16px; gap: 11px; font-size: 11px; }
+.mobile-menu { display: none !important; }
+
+@media (min-width: 1400px) {
+  .site-header { padding-left: max(7.05%, calc((100% - 1200px)/2)); padding-right: max(7.05%, calc((100% - 1200px)/2)); }
+}
+
+@media (max-width: 900px) {
+  .site-header { padding: 0 5%; }
+}
+
+@media (max-width: 620px) {
+  html { scroll-padding-top: 84px; }
+  .site-header { height: 84px; padding: 0 6%; }
+  .site-header .brand-logo { width: 65px; height: 65px; }
+  .site-header .brand-name { font-size: 20px; }
+  .mobile-menu { display: grid !important; }
+  .main-nav { position: absolute; top: 83px; left: 0; right: 0; padding: 20px 6% 24px; display: none; flex-direction: column; align-items: stretch; gap: 19px; background: var(--paper); border-bottom: 1px solid #e5e7dd; box-shadow: 0 12px 18px #13251b12; }
+  .main-nav.is-open { display: flex; }
+  .main-nav > a { padding: 4px 0; font-size: 13px; }
+  .nav-cta { align-self: flex-start; }
+}

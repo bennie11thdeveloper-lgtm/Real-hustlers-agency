@@ -1,0 +1,29 @@
+.role-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.section-heading h2 span { color: #8cab45; }
+.role-card { position: relative; min-height: 270px; padding: 15px; overflow: hidden; border: 0; border-radius: 3px; color: #fff; background: #183b30; text-align: left; cursor: pointer; display: flex; transition: transform .22s, box-shadow .22s; isolation: isolate; }
+.role-card::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(180deg, #101a1640 0%, #101a161a 27%, #101a16d9 100%); }
+.role-card:hover { transform: translateY(-5px); box-shadow: 0 13px 28px #152d2030; }
+.role-image { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
+.role-card:hover .role-image { transform: scale(1.05); }
+.role-card-content { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+.role-top { padding: 7px 9px; border: 1px solid #ffffff75; border-radius: 2px; color: #fff; font-size: 8px; letter-spacing: 1px; font-weight: 700; background: #101a164d; }
+.role-card-copy { margin-top: auto; }
+.role-name { display: block; font: 700 18px/1.2 var(--display); letter-spacing: -.55px; }
+.role-detail { display: block; margin-top: 8px; color: #ffffffd9; font-size: 9px; line-height: 1.6; }
+.role-link { width: 100%; margin-top: 17px; padding-top: 12px; border-top: 1px solid #ffffff70; display: flex; justify-content: space-between; align-items: center; color: #fff; font-size: 9px; font-weight: 700; }
+.role-link svg { color: var(--lime); }
+.opportunity-foot { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; color: #747b73; font-size: 10px; }
+
+@media (max-width: 900px) {
+  .role-grid { grid-template-columns: repeat(2,1fr); }
+  .role-card { min-height: 245px; }
+}
+
+@media (max-width: 620px) {
+  .role-grid { gap: 9px; }
+  .role-card { min-height: 205px; padding: 11px; }
+  .role-name { font-size: 15px; }
+  .role-detail { max-width: 180px; font-size: 8px; line-height: 1.5; }
+  .role-link { margin-top: 10px; padding-top: 8px; font-size: 8px; }
+  .opportunity-foot { align-items: flex-start; gap: 9px; flex-direction: column; font-size: 9px; }
+}

@@ -1,0 +1,18 @@
+.about { padding-top: 68px; padding-bottom: 34px; }
+.about h2 { margin: 0; font-size: clamp(44px,5.5vw,67px); line-height: 1.04; letter-spacing: -4px; }
+.about h2 span { color: #8cab45; }
+.about-tag { display: flex; align-items: center; gap: 10px; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+.about-content { padding: 36px 0 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 8%; align-items: center; }
+.about-copy { max-width: 405px; }
+.about-copy p { margin: 0 0 12px; color: #687168; font-size: 12px; line-height: 1.85; }
+.about-copy .inline-link { margin-top: 9px; font-size: 10px; }
+.about-bottom { padding-top: 15px; border-top: 1px solid #e1e3d9; display: flex; justify-content: space-between; font-size: 8px; font-weight: 700; letter-spacing: 1px; color: #82897e; }
+.about-bottom span:last-child { display: flex; align-items: center; gap: 7px; }
+
+@media (max-width: 620px) {
+  .about { padding-top: 48px; padding-bottom: 24px; }
+  .about-content { padding: 24px 0 28px; grid-template-columns: 1fr; gap: 17px; }
+  .about h2 { font-size: 53px; letter-spacing: -3px; }
+  .about-copy p { font-size: 10px; }
+  .about-bottom { font-size: 7px; }
+}

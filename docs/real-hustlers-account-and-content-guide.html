@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Real Hustlers | Account Access & Website Editing Guide</title>
+    <style>
+      :root {
+        color: #1a2d23;
+        background: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.55;
+        --forest: #183b30;
+        --lime: #d3f268;
+        --quiet: #69756a;
+        --line: #dfe5d9;
+        --pale: #f4f6ee;
+      }
+      * { box-sizing: border-box; }
+      body { max-width: 8.5in; margin: 0 auto; }
+      h1, h2, h3 { color: var(--forest); font-family: Arial, Helvetica, sans-serif; }
+      h1 { margin: 8px 0 16px; font-size: 36pt; line-height: 1.08; letter-spacing: -1.2pt; }
+      h2 { margin: 0 0 12px; font-size: 20pt; line-height: 1.18; }
+      h3 { margin: 18px 0 5px; font-size: 12pt; }
+      p { margin: 0 0 11px; }
+      ul, ol { margin: 7px 0 14px; padding-left: 21px; }
+      li { margin: 4px 0; padding-left: 2px; }
+      a { color: #426b3c; text-decoration: underline; overflow-wrap: anywhere; }
+      code { font-family: Consolas, monospace; font-size: 9pt; color: #37533c; }
+      .page { min-height: 9.2in; padding: .18in .12in; page-break-after: always; }
+      .page:last-child { page-break-after: auto; }
+      .brand { display: flex; align-items: center; gap: 10px; color: var(--forest); font-weight: 800; letter-spacing: .4px; }
+      .brand-mark { font-size: 22pt; letter-spacing: -2pt; }
+      .brand-mark span { color: #92b943; }
+      .brand-label { font-size: 8pt; line-height: 1.15; }
+      .eyebrow { margin: 26px 0 10px; color: #74844f; font-size: 8pt; font-weight: 700; letter-spacing: 1.5px; }
+      .cover { min-height: 9.35in; padding: .35in .25in; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(145deg,#f5f7ee 0%,#edf1e0 72%,#e2edc5 100%); }
+      .cover h1 { max-width: 6.1in; font-size: 39pt; }
+      .cover h1 span { color: #87a844; }
+      .cover-intro { max-width: 5.5in; color: #556258; font-size: 14pt; line-height: 1.7; }
+      .cover-callout { max-width: 5.3in; margin-top: 30px; padding: 16px 19px; border-left: 4px solid #9bbb50; background: #fff; color: #48564a; font-size: 10pt; }
+      .cover-footer { margin-top: 65px; color: #6c776a; font-size: 8pt; letter-spacing: .8px; }
+      .section-tag { margin-bottom: 4px; color: #85934f; font-size: 8pt; font-weight: 700; letter-spacing: 1.2px; }
+      .lead { margin-bottom: 17px; color: #59665b; font-size: 11.5pt; }
+      .callout { margin: 13px 0; padding: 12px 15px; border: 1px solid #dfe7cf; background: var(--pale); }
+      .callout strong { color: var(--forest); }
+      .warning { border-color: #e8d9b3; background: #fbf6e9; }
+      table { width: 100%; margin: 13px 0 17px; border-collapse: collapse; font-size: 9pt; }
+      th { padding: 8px 9px; color: #fff; background: var(--forest); text-align: left; }
+      td { padding: 8px 9px; border: 1px solid var(--line); vertical-align: top; }
+      tbody tr:nth-child(even) { background: #f7f8f4; }
+      .step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; margin: 10px 0; }
+      .step-number { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--forest); background: var(--lime); font-weight: 700; font-size: 9pt; }
+      .step p { margin-bottom: 2px; color: #637064; font-size: 9.5pt; }
+      .step strong { color: #263e2f; }
+      .portal { display: grid; grid-template-columns: 1.25in 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+      .portal:last-child { border-bottom: 0; }
+      .portal h3 { margin: 0 0 3px; }
+      .portal p { margin: 0; color: #667167; font-size: 9pt; }
+      .small { color: var(--quiet); font-size: 8.5pt; }
+      .footer-line { margin-top: 22px; padding-top: 9px; border-top: 1px solid var(--line); color: #7b8379; font-size: 8pt; }
+      .admin-url { display: inline-block; margin: 6px 0 14px; padding: 11px 16px; background: var(--forest); color: #fff; text-decoration: none; font-weight: 700; }
+      @page { size: Letter; margin: .55in .62in; }
+      @media print {
+        body { max-width: none; }
+        .page { min-height: 9.4in; padding: .12in 0; }
+        .cover { min-height: 9.55in; margin: -.15in -.1in; padding: .4in .28in; }
+        a { color: #355f35; }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page cover">
+      <div class="brand"><span class="brand-mark">RH<span>.</span></span><span class="brand-label">REAL<br />HUSTLERS</span></div>
+      <p class="eyebrow">AGENCY OWNER’S QUICK GUIDE</p>
+      <h1>Account access<br />&amp; website editing<br /><span>made simpler.</span></h1>
+      <p class="cover-intro">A practical guide to your five service accounts, the one-time launch setup, and updating website information from your own secure admin page.</p>
+      <div class="cover-callout"><strong>After initial setup, you can edit the website without returning to a backend dashboard.</strong> Sign in to your website’s private content editor, make the change, and save.</div>
+      <p class="cover-footer">REAL HUSTLERS’ AGENCY &nbsp;·&nbsp; UGANDA</p>
+    </section>
+
+    <section class="page">
+      <p class="section-tag">01 / QUICK ORIENTATION</p>
+      <h2>What this guide covers</h2>
+      <p class="lead">Real Hustlers connects several independent online accounts. Each provider has its own login and dashboard. The website’s admin editor is separate from those provider portals.</p>
+      <table>
+        <thead><tr><th>Service</th><th>What it does for the website</th><th>Where routine work happens</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Supabase</strong></td><td>PostgreSQL database, admin sign-in, secure website copy.</td><td>Website editor for copy. Dashboard for initial setup only.</td></tr>
+          <tr><td><strong>UploadThing</strong></td><td>Private storage for applicant documents.</td><td>Provider dashboard for storage/account settings.</td></tr>
+          <tr><td><strong>Flutterwave</strong></td><td>UGX checkout using supported Uganda mobile-money methods.</td><td>Provider dashboard for settlement, payment activity, and account settings.</td></tr>
+          <tr><td><strong>Africa’s Talking</strong></td><td>SMS confirmations and application messages to Uganda numbers.</td><td>Provider dashboard for SMS balance, sender settings, and activity.</td></tr>
+          <tr><td><strong>Resend</strong></td><td>Applicant and agency email notifications.</td><td>Provider dashboard for verified domains and email activity.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warning"><strong>Project status:</strong> The React app and integration code are prepared, but no real provider credentials or Supabase project details have been supplied. The app is not connected to live accounts or deployed on your domain yet. Complete the one-time launch setup before collecting applications or payments.</div>
+      <h3>Important distinction</h3>
+      <p>You access each account using the email and password you choose when registering with that provider. This guide contains sign-in links, never passwords or secret API keys. Account access does not automatically mean the website integration is configured.</p>
+      <p class="small">Never send passwords, verification codes, Flutterwave secret keys, Resend keys, Africa’s Talking keys, UploadThing tokens, or Supabase service-role keys in email or chat.</p>
+    </section>
+
+    <section class="page">
+      <p class="section-tag">02 / OFFICIAL PROVIDER ACCOUNTS</p>
+      <h2>Open each account securely</h2>
+      <p class="lead">Use the official sign-in or registration page. Create each account in the agency’s legal/business name, keep owner access under the agency, and turn on multifactor authentication where available.</p>
+      <div class="portal">
+        <strong>Supabase</strong>
+        <div><h3><a href="https://supabase.com/dashboard">supabase.com/dashboard</a></h3><p>Create the agency project and manage its Postgres database, Authentication, Edge Functions, and one-time security setup. Select the agency project after sign-in.</p></div>
+      </div>
+      <div class="portal">
+        <strong>UploadThing</strong>
+        <div><h3><a href="https://uploadthing.com/dashboard">uploadthing.com/dashboard</a></h3><p>Create an app and a storage token. For applicant documents, enable <strong>Allow Overriding ACL</strong>; the site stores uploaded documents privately.</p></div>
+      </div>
+      <div class="portal">
+        <strong>Flutterwave</strong>
+        <div><h3><a href="https://app.flutterwave.com/">app.flutterwave.com</a></h3><p>Complete business verification and confirm your account can accept UGX payments and Uganda mobile money, including the intended MTN and Airtel options. Test in test mode before live payments.</p></div>
+      </div>
+      <div class="portal">
+        <strong>Africa’s Talking</strong>
+        <div><h3><a href="https://account.africastalking.com/">account.africastalking.com</a></h3><p>Set up the account, obtain an API key, and confirm Uganda SMS access, sender rules, and credit. Use the sandbox username only with sandbox credentials.</p></div>
+      </div>
+      <div class="portal">
+        <strong>Resend</strong>
+        <div><h3><a href="https://resend.com/">resend.com</a></h3><p>Verify an agency-owned sending domain, add the required domain DNS records, then create an API key and choose a verified sender address.</p></div>
+      </div>
+      <div class="callout"><strong>Account recovery:</strong> If you cannot sign in, use that provider’s “Forgot password?” link on its official portal. A provider’s password-reset link is not the same as the website editor’s admin-password reset.</div>
+    </section>
+
+    <section class="page">
+      <p class="section-tag">03 / ONE-TIME WEBSITE ACTIVATION</p>
+      <h2>Set up before launch</h2>
+      <p class="lead">A developer or trusted technical administrator completes these initial deployment tasks once. Provider credentials go into the Supabase secret manager—not React code or the website editor.</p>
+      <div class="step"><span class="step-number">1</span><div><strong>Create a Supabase project</strong><p>Copy the project URL and publishable/anon key into the site’s public deployment settings. Never use the service-role key in the browser.</p></div></div>
+      <div class="step"><span class="step-number">2</span><div><strong>Apply the two database migrations in order</strong><p>Run <code>20261013000000_create_applications_and_payments.sql</code>, then <code>20261013010000_add_site_content_editor.sql</code>. They create the protected applicant/payment records and the admin-editable website copy.</p></div></div>
+      <div class="step"><span class="step-number">3</span><div><strong>Add server-side provider secrets</strong><p>In the Supabase project, add <code>APP_ORIGIN</code>, <code>APP_SITE_URL</code>, <code>FLW_SECRET_KEY</code>, <code>FLW_WEBHOOK_SECRET_HASH</code>, <code>UPLOADTHING_TOKEN</code>, <code>RESEND_API_KEY</code>, <code>RESEND_FROM_EMAIL</code>, <code>AT_API_KEY</code>, <code>AT_USERNAME</code>, and optional <code>AGENCY_NOTIFICATION_EMAIL</code>.</p></div></div>
+      <div class="step"><span class="step-number">4</span><div><strong>Deploy the Supabase Edge Functions</strong><p>Deploy <code>submit-application</code>, <code>payment-status</code>, <code>uploadthing</code>, and <code>flutterwave-webhook</code>. Configure Flutterwave’s <code>charge.completed</code> webhook to <code>https://YOUR_PROJECT.supabase.co/functions/v1/flutterwave-webhook</code> and enter the matching webhook secret hash.</p></div></div>
+      <div class="step"><span class="step-number">5</span><div><strong>Invite the agency owner as the first editor</strong><p>In Supabase Authentication → Users, invite the owner’s email and complete the invitation. Add the exact user ID to <code>public.site_admins</code> once, using the SQL instruction in the project’s README. Do not grant access to unknown users.</p></div></div>
+      <div class="step"><span class="step-number">6</span><div><strong>Connect and test the public domain</strong><p>Set the production domain as the app origin and authentication redirect. Check form submissions, private file uploads, SMS/email delivery, Flutterwave test checkout, signed webhook verification, and return-page status. Only then switch to approved live credentials.</p></div></div>
+      <div class="callout warning"><strong>Candidate fee:</strong> The current checkout is fixed at <strong>UGX 150,000</strong>. Publish the agency’s precise registration/paperwork service, fee, refund terms, privacy notice, and contact details. Check the fee and overseas-recruitment rules with qualified local counsel and licensing authorities before accepting candidate payments. A payment does not promise a job, visa, or employment.</div>
+    </section>
+
+    <section class="page">
+      <p class="section-tag">04 / EVERYDAY CONTENT EDITING</p>
+      <h2>Update the website without backend visits</h2>
+      <p class="lead">After the initial setup is complete and your owner/editor account has been authorized, make ordinary website-copy updates in the website itself.</p>
+      <a class="admin-url" href="https://YOUR_DOMAIN/admin">Open the Real Hustlers content editor → /admin</a>
+      <div class="step"><span class="step-number">1</span><div><strong>Go to the admin page</strong><p>Visit your deployed address followed by <code>/admin</code>—for example, <code>https://realhustlers.ug/admin</code>. Bookmark this private sign-in page.</p></div></div>
+      <div class="step"><span class="step-number">2</span><div><strong>Sign in using your invited agency account</strong><p>Use the email address and password from your owner invitation. Select “Forgot your password?” if necessary; follow the secure email link and set a new password on the admin page.</p></div></div>
+      <div class="step"><span class="step-number">3</span><div><strong>Edit the labeled fields</strong><p>The editor groups text by site section. Change navigation, hero wording, job-title labels and descriptions, how-it-works steps, agency story, application-form labels/instructions, buttons, footer copy, and the terms link.</p></div></div>
+      <div class="step"><span class="step-number">4</span><div><strong>Save and review</strong><p>Select <strong>Save changes</strong>, wait for the success message, then choose “View public site” or reload the public page. Published copy is stored in Supabase and loads from the site on visitor visits.</p></div></div>
+      <div class="step"><span class="step-number">5</span><div><strong>Keep account access controlled</strong><p>Sign out on shared devices. Give admin access only to trusted editors. To add or remove editors, ask the technical administrator to update the authorized admin list—do not share one person’s password with the whole team.</p></div></div>
+      <div class="callout"><strong>Routine edits do not need:</strong> a code editor, an npm command, a database table editor, or access to the Supabase/hosting backend. They only need your website URL, admin login, and an internet connection.</div>
+    </section>
+
+    <section class="page">
+      <p class="section-tag">05 / SAFE EDITING &amp; TROUBLESHOOTING</p>
+      <h2>What you can change—and what you can’t</h2>
+      <table>
+        <thead><tr><th>Editable on /admin</th><th>Protected / one-time technical configuration</th></tr></thead>
+        <tbody>
+          <tr><td>Public-page wording, headings, descriptions, calls to action, job-card titles/details, and displayed process steps.</td><td>UGX 150,000 charge amount and its database/payment verification rules.</td></tr>
+          <tr><td>Application form field labels and instructions; the HTTPS address of the published fee/refund terms.</td><td>Provider passwords, API keys, webhook secret, Supabase service-role key, and database/security policies.</td></tr>
+          <tr><td>Agency introduction and public footer text.</td><td>How payments are confirmed; job-category identifiers; applicant files/database access; application code, images/layout, or new features.</td></tr>
+        </tbody>
+      </table>
+      <h3>The application or Save button is disabled</h3>
+      <ul>
+        <li>The public Supabase project may not have been configured or deployed.</li>
+        <li>Publish the real agency fee/refund terms page over HTTPS and enter its complete URL in **Payment Terms Url** in the editor. Save the content.</li>
+        <li>Do not use a placeholder or a terms link you have not reviewed.</li>
+      </ul>
+      <h3>Admin sign-in works, but the editor will not load</h3>
+      <ul>
+        <li>Ask your technical administrator to confirm both database migrations were applied and that your signed-in account was explicitly added to the admin list.</li>
+        <li>Try reloading the page and signing in again. Password recovery requires the deployed <code>/admin</code> URL to be on the allowed Supabase redirect list.</li>
+      </ul>
+      <h3>Payment or message did not arrive</h3>
+      <ul>
+        <li>Check the Flutterwave transaction dashboard. A browser return alone does not confirm payment; the verified webhook does.</li>
+        <li>Check SMS account credits and the applicant’s Ugandan number. Check Resend delivery logs and sender-domain verification.</li>
+        <li>Do not ask an applicant to pay a second time until checking the original transaction.</li>
+      </ul>
+      <div class="callout warning"><strong>Security &amp; privacy:</strong> Do not collect real applicant documents until the private UploadThing ACL is confirmed. Restrict staff access, keep provider secrets secret, and do not store passwords or applicant documents in the content editor.</div>
+      <p class="footer-line">Project setup details and the exact first-admin SQL are in the included <strong>README.md</strong>. For changes to the fee, integration behavior, or page structure, contact an authorized developer. This guide does not contain account passwords or secret API keys.</p>
+    </section>
+  </body>
+</html>
