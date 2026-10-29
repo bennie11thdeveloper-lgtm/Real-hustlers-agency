@@ -6,7 +6,7 @@ React/Vite frontend with Supabase Edge Functions for application intake, private
 
 ## Local development
 
-1. Create a Supabase project and copy its project URL and publishable/anon key.
+1. Create a Supabase project and copy its project URL (for example, `https://your-project.supabase.co`, without `/rest/v1`) and publishable/anon key.
 2. Copy `.env.example` to `.env` and fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 3. Install dependencies and start Vite:
 
@@ -17,6 +17,8 @@ React/Vite frontend with Supabase Edge Functions for application intake, private
 
 The public site builds without connected accounts, but submissions remain disabled until Supabase and the agency’s fee terms have been set up.
 The applicant intake and payment-status functions are public endpoints for the public application form; the Supabase publishable key is public, and database access is separately denied by RLS. Add CAPTCHA/rate limiting before promoting the form widely.
+
+Vercel deployments use `vercel.json` to route `/admin` to the Vite app entry point, so the content editor works when opened directly or from the public-site footer.
 
 ## Supabase setup
 
