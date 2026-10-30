@@ -1,8 +1,13 @@
+import siteLogo from '../Editz/20261014_121743.jpg';
+
 export const defaultSiteContent = {
   navigation: {
-    opportunities: 'Opportunities',
-    journey: 'How it works',
-    about: 'About us',
+    logo: siteLogo,
+    links: [
+      { label: 'Opportunities', href: '#opportunities' },
+      { label: 'How it works', href: '#how-it-works' },
+      { label: 'About us', href: '#about' },
+    ],
     action: 'Find your opportunity',
   },
   hero: {
@@ -124,3 +129,31 @@ export const defaultSiteContent = {
   },
   paymentTermsUrl: '',
 };
+
+export function normalizeSiteContent(content) {
+  const navigation = content?.navigation && typeof content.navigation === 'object'
+    ? content.navigation
+    : {};
+  const legacyLinks = [
+    { key: 'opportunities', href: '#opportunities' },
+    { key: 'journey', href: '#how-it-works' },
+    { key: 'about', href: '#about' },
+  ]
+    .filter(({ key }) => typeof navigation[key] === 'string')
+    .map(({ key, href }) => ({ label: navigation[key], href }));
+  const savedLinks = Array.isArray(navigation.links)
+    ? navigation.links.filter((link) =>
+      link && typeof link.label === 'string' && typeof link.href === 'string',
+    )
+    : legacyLinks;
+
+  return {
+    ...defaultSiteContent,
+    ...content,
+    navigation: {
+      logo: typeof navigation.logo === 'string' ? navigation.logo : defaultSiteContent.navigation.logo,
+      links: savedLinks,
+      action: navigation.action ?? defaultSiteContent.navigation.action,
+    },
+  };
+}

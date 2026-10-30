@@ -2,7 +2,7 @@
 
 React/Vite frontend with Supabase Edge Functions for application intake, private UploadThing document storage, Flutterwave mobile-money checkout, Africa's Talking SMS, and Resend email.
 
-[Download the Real Hustlers account access and content editing guide (PDF)](./docs/Real-Hustlers-Account-and-Content-Guide.pdf).
+[Open the Real Hustlers account access and content editing guide](./docs/real-hustlers-account-and-content-guide.html).
 
 ## Local development
 
@@ -22,12 +22,13 @@ Vercel deployments use `vercel.json` to route `/admin` to the Vite app entry poi
 
 ## Supabase setup
 
-Apply **both** migrations in order using the Supabase SQL Editor or Supabase CLI:
+Apply all three migrations in order using the Supabase SQL Editor or Supabase CLI:
 
 1. `supabase/migrations/20261013000000_create_applications_and_payments.sql`
 2. `supabase/migrations/20261013010000_add_site_content_editor.sql`
+3. `supabase/migrations/20261030000000_add_public_site_assets.sql`
 
-The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
+The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. The third creates a public bucket for website images; only approved admins can upload to it. Applicant documents remain in separate private storage. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
 
 ### One-time admin setup
 
@@ -52,7 +53,7 @@ Do this once during launch; after setup, routine copy updates happen at `https:/
 
 1. Open `https://YOUR_DOMAIN/admin`.
 2. Sign in with the owner/editor email and password.
-3. Edit the labeled fields. These include navigation, the homepage hero, job titles and summaries, agency story, application form wording, and buttons.
+3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. Other sections include the homepage hero, job titles and summaries, agency story, application form wording, and buttons.
 4. Update **Payment Terms Url** with the agency's real, published `https://` terms page. Review its fee, service description, refund terms, and applicant protections before publishing.
 5. Select **Save changes**, then open or refresh the public site to review the live changes. Use **View public site** to preview it. Use **Forgot your password?** on the sign-in screen to recover your admin password by email.
 

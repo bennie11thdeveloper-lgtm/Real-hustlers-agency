@@ -1,12 +1,126 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, LoaderCircle, LogOut, Save } from 'lucide-react';
+import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash2, Upload } from 'lucide-react';
 import siteLogo from '../Editz/20261014_121743.jpg';
-import { defaultSiteContent } from './content.js';
+import { defaultSiteContent, normalizeSiteContent } from './content.js';
 import { supabase } from './lib/supabase.js';
 import AdminLogin from './sections/AdminLogin.jsx';
 
+const contentSections = [
+  { key: 'navigation', label: 'Header' },
+  { key: 'hero', label: 'Homepage hero' },
+  { key: 'proof', label: 'Highlights' },
+  { key: 'opportunities', label: 'Opportunities' },
+  { key: 'journey', label: 'How it works' },
+  { key: 'about', label: 'About us' },
+  { key: 'closing', label: 'Final call to action' },
+  { key: 'footer', label: 'Footer' },
+  { key: 'applicationForm', label: 'Application form' },
+  { key: 'paymentTermsUrl', label: 'Payment terms' },
+];
+
 function displayLabel(value) {
   return value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]/g, ' ');
+}
+
+function isValidNavigationHref(value) {
+  const href = value.trim();
+  if (/^#[A-Za-z0-9_-]+$/.test(href) || /^\/(?!\/)/.test(href)) return true;
+  if (/^https:\/\/\S+$/i.test(href)) return true;
+  if (/^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(href)) return true;
+  return /^tel:\+?[0-9(). -]+$/i.test(href);
+}
+
+function HeaderFields({ value, onChange, onUploadLogo, isUploadingLogo }) {
+  return (
+    <div className="header-editor">
+      <div className="header-logo-editor">
+        <div>
+          <label className="editor-field-label" htmlFor="header-logo-upload">Header logo</label>
+          <p>Upload a PNG, JPG, or WebP image up to 2 MB.</p>
+          <label className="button button-dark editor-upload-button" htmlFor="header-logo-upload">
+            {isUploadingLogo ? <><LoaderCircle className="spinner" size={15} /> Uploading…</> : <><Upload size={15} /> Choose image</>}
+          </label>
+          <input
+            id="header-logo-upload"
+            className="visually-hidden"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={isUploadingLogo}
+            onChange={onUploadLogo}
+          />
+        </div>
+        <img className="editor-logo-preview" src={value.logo || siteLogo} alt="Current header logo preview" />
+      </div>
+
+      <div className="header-links-heading">
+        <div>
+          <h2>Navigation links</h2>
+          <p>Edit the text and destination visitors see in the header.</p>
+        </div>
+        <button
+          className="editor-add-link"
+          type="button"
+          onClick={() => onChange({ ...value, links: [...value.links, { label: 'New link', href: '#home' }] })}
+        >
+          <Plus size={15} /> Add link
+        </button>
+      </div>
+      <div className="header-link-list">
+        {value.links.map((link, index) => (
+          <fieldset className="header-link-row" key={`header-link-${index}`}>
+            <legend>Link {index + 1}</legend>
+            <label className="editor-field">
+              <span>Link text</span>
+              <input
+                type="text"
+                value={link.label}
+                onChange={(event) => {
+                  const links = value.links.map((item, itemIndex) =>
+                    itemIndex === index ? { ...item, label: event.target.value } : item,
+                  );
+                  onChange({ ...value, links });
+                }}
+              />
+            </label>
+            <label className="editor-field">
+              <span>Destination</span>
+              <input
+                type="text"
+                value={link.href}
+                placeholder="#about or https://example.com"
+                onChange={(event) => {
+                  const links = value.links.map((item, itemIndex) =>
+                    itemIndex === index ? { ...item, href: event.target.value } : item,
+                  );
+                  onChange({ ...value, links });
+                }}
+              />
+            </label>
+            <button
+              className="editor-remove-link"
+              type="button"
+              aria-label={`Remove link ${index + 1}`}
+              onClick={() => onChange({
+                ...value,
+                links: value.links.filter((_, itemIndex) => itemIndex !== index),
+              })}
+            >
+              <Trash2 size={16} />
+            </button>
+          </fieldset>
+        ))}
+        {value.links.length === 0 && <p className="header-links-empty">No navigation links yet. Add a link to get started.</p>}
+      </div>
+      <label className="editor-field header-action-field">
+        <span>Application button text</span>
+        <input
+          type="text"
+          value={value.action}
+          onChange={(event) => onChange({ ...value, action: event.target.value })}
+        />
+      </label>
+    </div>
+  );
 }
 
 function ContentFields({ value, path = [], onChange }) {
@@ -71,6 +185,7 @@ export default function Admin() {
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [content, setContent] = useState(defaultSiteContent);
+  const [activeSection, setActiveSection] = useState('navigation');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRecovery, setIsRecovery] = useState(false);
@@ -78,6 +193,7 @@ export default function Admin() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -112,7 +228,7 @@ export default function Admin() {
           setSession(null);
         } else {
           setIsAdmin(true);
-          if (contentResult.data?.content) setContent(contentResult.data.content);
+          if (contentResult.data?.content) setContent(normalizeSiteContent(contentResult.data.content));
         }
       }
       setIsLoading(false);
@@ -158,7 +274,7 @@ export default function Admin() {
       await supabase.auth.signOut();
     } else {
       setIsAdmin(true);
-      setContent(contentResult.data?.content ?? defaultSiteContent);
+      setContent(normalizeSiteContent(contentResult.data?.content ?? defaultSiteContent));
       setPassword('');
     }
     setIsLoading(false);
@@ -226,6 +342,14 @@ export default function Admin() {
       }
     }
 
+    const invalidLink = content.navigation.links.find(({ label, href }) =>
+      !label.trim() || !isValidNavigationHref(href),
+    );
+    if (invalidLink) {
+      setErrorMessage('Each header link needs text and a valid destination (a #section, /page, HTTPS URL, email, or phone link).');
+      return;
+    }
+
     setIsSaving(true);
     setMessage('');
     setErrorMessage('');
@@ -242,6 +366,39 @@ export default function Admin() {
       setMessage('Changes saved. Refresh the public website to see the latest content.');
     }
     setIsSaving(false);
+  }
+
+  async function handleLogoUpload(event) {
+    const [file] = event.target.files ?? [];
+    event.target.value = '';
+    if (!file) return;
+    if (!supabase || !isAdmin) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    setErrorMessage('');
+    setMessage('');
+    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+    const objectPath = `header-logo/${crypto.randomUUID()}.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from('site-assets')
+        .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
+      setContent((current) => ({
+        ...current,
+        navigation: { ...current.navigation, logo: data.publicUrl },
+      }));
+      setMessage('Logo uploaded. Save changes to publish it.');
+    } catch {
+      setErrorMessage('Logo upload failed. Check the site-assets storage setup and try again.');
+    } finally {
+      setIsUploadingLogo(false);
+    }
   }
 
   async function handleSignOut() {
@@ -286,16 +443,47 @@ export default function Admin() {
         ) : (
           <>
             <div className="admin-title-row">
-              <div><p className="eyebrow">REAL HUSTLERS’ AGENCY</p><h1>Website content</h1><p>Update the words visitors see. Your saved edits appear on the public site.</p></div>
+              <div><p className="eyebrow">REAL HUSTLERS’ AGENCY</p><h1>Website content</h1><p>Update what visitors see. Your saved edits appear on the public site.</p></div>
               <a className="admin-preview-link" href="/" target="_blank" rel="noreferrer">View public site <ArrowLeft size={14} /></a>
             </div>
             {message && <p className="admin-success"><Check size={16} /> {message}</p>}
             {errorMessage && <p className="form-error admin-error" role="alert">{errorMessage}</p>}
             <form className="content-editor" onSubmit={handleSave}>
-              <ContentFields value={content} onChange={(path, value) => setContent((current) => updateContentAtPath(current, path, value))} />
+              <div className="content-section-tabs" role="group" aria-label="Editable website sections">
+                {contentSections.map((section) => (
+                  <button
+                    className={activeSection === section.key ? 'content-section-tab is-active' : 'content-section-tab'}
+                    type="button"
+                    aria-pressed={activeSection === section.key}
+                    key={section.key}
+                    onClick={() => setActiveSection(section.key)}
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+              <section
+                className="content-section-panel"
+                aria-label={contentSections.find((section) => section.key === activeSection)?.label}
+              >
+                {activeSection === 'navigation' ? (
+                  <HeaderFields
+                    value={content.navigation}
+                    onChange={(navigation) => setContent((current) => ({ ...current, navigation }))}
+                    onUploadLogo={handleLogoUpload}
+                    isUploadingLogo={isUploadingLogo}
+                  />
+                ) : (
+                  <ContentFields
+                    value={content[activeSection]}
+                    path={[activeSection]}
+                    onChange={(path, value) => setContent((current) => updateContentAtPath(current, path, value))}
+                  />
+                )}
+              </section>
               <div className="editor-actions">
                 <p>Edits are published when you save. The UGX 150,000 fee and job categories used for payment records are fixed settings.</p>
-                <button className="button button-dark" type="submit" disabled={isSaving}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
+                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
               </div>
             </form>
           </>

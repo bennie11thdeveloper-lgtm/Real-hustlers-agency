@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { defaultSiteContent } from './content.js';
+import { defaultSiteContent, normalizeSiteContent } from './content.js';
 import { supabase } from './lib/supabase.js';
 
 export function useSiteContent() {
@@ -21,7 +21,7 @@ export function useSiteContent() {
         console.error('Could not load published website content; showing the built-in copy.', error.message);
         return;
       }
-      if (data?.content) setContent(data.content);
+      if (data?.content) setContent(normalizeSiteContent(data.content));
     }
 
     loadContent();
