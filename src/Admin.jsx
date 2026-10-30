@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash2, Upload } from 'lucide-react';
 import siteLogo from '../Editz/20261014_121743.jpg';
 import { defaultOpportunityImages, defaultSiteContent, normalizeSiteContent } from './content.js';
@@ -17,6 +17,29 @@ const contentSections = [
   { key: 'applicationForm', label: 'Application form' },
   { key: 'paymentTermsUrl', label: 'Payment terms' },
 ];
+
+class ContentSectionBoundary extends Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('Could not render the selected website content section.', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <p className="form-error" role="alert">
+          This section could not be displayed. Select another section or reload the admin page.
+        </p>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function displayLabel(value) {
   return value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]/g, ' ');
@@ -221,7 +244,17 @@ function OpportunityFields({ value, onChange, onUploadImage, uploadingRoleIndex 
 }
 
 function AboutFields({ value, onChange, onUploadImage, uploadingTeamIndex }) {
-  const { team, ...aboutCopy } = value;
+  const team = Array.isArray(value?.team)
+    ? value.team.filter((member) =>
+      member &&
+      typeof member.name === 'string' &&
+      typeof member.position === 'string' &&
+      typeof member.image === 'string',
+    )
+    : [];
+  const aboutCopy = Object.fromEntries(
+    Object.entries(value ?? {}).filter(([key]) => key !== 'team'),
+  );
 
   function updateMember(index, changes) {
     onChange({
@@ -606,7 +639,7 @@ export default function Admin() {
       setErrorMessage('The changes could not be saved. Check your internet connection and admin permissions.');
     } else {
       setContent(contentToSave);
-      setMessage('Changes saved. Refresh the public website to see the latest content.');
+      setMessage('Changes saved and published. Open public pages update automatically.');
     }
     setIsSaving(false);
   }
@@ -779,10 +812,13 @@ export default function Admin() {
                   </button>
                 ))}
               </div>
-              <section
-                className="content-section-panel"
-                aria-label={contentSections.find((section) => section.key === activeSection)?.label}
+              <ContentSectionBoundary
+                key={activeSection}
               >
+                <section
+                  className="content-section-panel"
+                  aria-label={contentSections.find((section) => section.key === activeSection)?.label}
+                >
                 {activeSection === 'navigation' ? (
                   <HeaderFields
                     value={content.navigation}
@@ -814,7 +850,8 @@ export default function Admin() {
                     onChange={(path, value) => setContent((current) => updateContentAtPath(current, path, value))}
                   />
                 )}
-              </section>
+                </section>
+              </ContentSectionBoundary>
               <div className="editor-actions">
                 <p>Edits are published when you save. The UGX 150,000 fee and job categories used for payment records are fixed settings.</p>
                 <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo || uploadingRoleIndex !== null || uploadingTeamIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>

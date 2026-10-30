@@ -22,14 +22,15 @@ Vercel deployments use `vercel.json` to route `/admin` to the Vite app entry poi
 
 ## Supabase setup
 
-Apply all four migrations in order using the Supabase SQL Editor or Supabase CLI:
+Apply all five migrations in order using the Supabase SQL Editor or Supabase CLI:
 
 1. `supabase/migrations/20261013000000_create_applications_and_payments.sql`
 2. `supabase/migrations/20261013010000_add_site_content_editor.sql`
 3. `supabase/migrations/20261030000000_add_public_site_assets.sql`
 4. `supabase/migrations/20261030010000_allow_editable_opportunity_roles.sql`
+5. `supabase/migrations/20261030020000_enable_site_content_realtime.sql`
 
-The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. The third creates a public bucket for website images; only approved admins can upload to it. The fourth allows application records to store admin-managed opportunity titles. Applicant documents remain in separate private storage. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
+The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. The third creates a public bucket for website images; only approved admins can upload to it. The fourth allows application records to store admin-managed opportunity titles. The fifth enables live delivery of published-content changes to visitors with the site already open. Applicant documents remain in separate private storage. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
 
 ### One-time admin setup
 
@@ -56,7 +57,7 @@ Do this once during launch; after setup, routine copy updates happen at `https:/
 2. Sign in with the owner/editor email and password.
 3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. In **Opportunities**, add or delete cards, edit job titles and descriptions, and upload or change each card image. In **About us**, edit the agency copy and add team members with their names, positions, and portrait images.
 4. Update **Payment Terms Url** with the agency's real, published `https://` terms page. Review its fee, service description, refund terms, and applicant protections before publishing.
-5. Select **Save changes**, then open or refresh the public site to review the live changes. Use **View public site** to preview it. Use **Forgot your password?** on the sign-in screen to recover your admin password by email.
+5. Select **Save changes**. Once the realtime migration is applied, open public pages receive the published changes automatically. Use **View public site** to preview them. Use **Forgot your password?** on the sign-in screen to recover your admin password by email.
 
 The fixed **UGX 150,000** payment amount, provider credentials, payment rules, layout, and code are intentionally not editable here. Opportunity titles are checked against the currently published cards and are stored with application records. Changing the charge requires an authorized developer to update the database constraint, backend checkout, reconciliation, and tests together. Applicants must explicitly agree to the configured terms; never present the fee as a guarantee of a job or visa.
 
