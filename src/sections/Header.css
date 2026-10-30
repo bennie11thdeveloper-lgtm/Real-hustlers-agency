@@ -21,7 +21,7 @@
 @media (max-width: 620px) {
   html { scroll-padding-top: 84px; }
   .site-header { height: 84px; padding: 0 6%; }
-  .site-header .brand-logo { width: 76px; height: 76px; }
+  .site-header .brand-logo { width: 100px; height: 100px; }
   .site-header .brand-name { font-size: 20px; }
   .mobile-menu { display: grid !important; }
   .main-nav { position: absolute; top: 83px; left: 0; right: 0; padding: 20px 6% 24px; display: none; flex-direction: column; align-items: stretch; gap: 19px; background: var(--paper); border-bottom: 1px solid #e5e7dd; box-shadow: 0 12px 18px #13251b12; }
