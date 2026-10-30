@@ -2,7 +2,6 @@ import { databaseRequest, signUploadToken } from "../_shared/database.ts";
 import { allowedOrigin, jsonResponse, readJson, requireAllowedOrigin } from "../_shared/http.ts";
 import { sendApplicationNotifications } from "../_shared/notifications.ts";
 
-const roles = new Set(["Domestic workers", "Drivers", "Security workers", "Machine operators", "Other"]);
 const registrationFee = 150_000;
 
 Deno.serve(async (request) => {
@@ -16,7 +15,7 @@ Deno.serve(async (request) => {
     const rawPhone = typeof body.phone === "string" ? body.phone.replace(/[\s()-]/g, "") : "";
     const phone = rawPhone.startsWith("0") ? `+256${rawPhone.slice(1)}` : rawPhone;
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-    const role = typeof body.role === "string" ? body.role : "";
+    const role = typeof body.role === "string" ? body.role.trim() : "";
     const experience = typeof body.experience === "string" ? body.experience.trim() : "";
     const feeAcknowledged = body.feeAcknowledged === true;
 
@@ -29,16 +28,29 @@ Deno.serve(async (request) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
       return jsonResponse({ error: "Enter a valid email address for your payment receipt." }, 400, origin);
     }
-    if (!roles.has(role)) return jsonResponse({ error: "Select a valid work area." }, 400, origin);
     if (experience.length > 2000) return jsonResponse({ error: "Experience details must be under 2,000 characters." }, 400, origin);
     if (!feeAcknowledged) return jsonResponse({ error: "Please acknowledge the registration and paperwork fee before continuing." }, 400, origin);
 
-    const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY");
-    const siteUrl = Deno.env.get("APP_SITE_URL");
-    const siteContent = await databaseRequest<Array<{ content: { paymentTermsUrl?: string } }>>(
+    const siteContent = await databaseRequest<Array<{ content: {
+      paymentTermsUrl?: string;
+      opportunities?: { roles?: Array<{ label?: string }> };
+    } }>>(
       "site_content",
       "?id=eq.public&select=content&limit=1",
     );
+    const publishedRoles = siteContent[0]?.content?.opportunities?.roles ?? [];
+    const roles = new Set([
+      "Other",
+      ...publishedRoles
+        .map((opportunity) => opportunity.label?.trim())
+        .filter((label): label is string => typeof label === "string" && label.length > 0),
+    ]);
+    if (role.length > 120 || !roles.has(role)) {
+      return jsonResponse({ error: "Select a valid work area." }, 400, origin);
+    }
+
+    const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY");
+    const siteUrl = Deno.env.get("APP_SITE_URL");
     const paymentTermsUrl = siteContent[0]?.content?.paymentTermsUrl?.trim();
     let validTermsUrl = false;
     try {

@@ -22,13 +22,14 @@ Vercel deployments use `vercel.json` to route `/admin` to the Vite app entry poi
 
 ## Supabase setup
 
-Apply all three migrations in order using the Supabase SQL Editor or Supabase CLI:
+Apply all four migrations in order using the Supabase SQL Editor or Supabase CLI:
 
 1. `supabase/migrations/20261013000000_create_applications_and_payments.sql`
 2. `supabase/migrations/20261013010000_add_site_content_editor.sql`
 3. `supabase/migrations/20261030000000_add_public_site_assets.sql`
+4. `supabase/migrations/20261030010000_allow_editable_opportunity_roles.sql`
 
-The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. The third creates a public bucket for website images; only approved admins can upload to it. Applicant documents remain in separate private storage. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
+The first migration creates applicant, payment, and document records with private-by-default database permissions. The second seeds the website's editable copy and adds an authenticated, admin-only editing role. The third creates a public bucket for website images; only approved admins can upload to it. The fourth allows application records to store admin-managed opportunity titles. Applicant documents remain in separate private storage. Visitors can read published website copy; only approved admins can change it. Supabase Edge Functions use the server-side service-role key.
 
 ### One-time admin setup
 
@@ -53,11 +54,11 @@ Do this once during launch; after setup, routine copy updates happen at `https:/
 
 1. Open `https://YOUR_DOMAIN/admin`.
 2. Sign in with the owner/editor email and password.
-3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. Other sections include the homepage hero, job titles and summaries, agency story, application form wording, and buttons.
+3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. In **Opportunities**, add or delete cards, edit job titles and descriptions, and upload or change each card image. Other sections include the homepage hero, agency story, application form wording, and buttons.
 4. Update **Payment Terms Url** with the agency's real, published `https://` terms page. Review its fee, service description, refund terms, and applicant protections before publishing.
 5. Select **Save changes**, then open or refresh the public site to review the live changes. Use **View public site** to preview it. Use **Forgot your password?** on the sign-in screen to recover your admin password by email.
 
-The fixed **UGX 150,000** payment amount, provider credentials, payment rules, internal role identifiers, layout, and code are intentionally not editable here. Changing the charge requires an authorized developer to update the database constraint, backend checkout, reconciliation, and tests together. Applicants must explicitly agree to the configured terms; never present the fee as a guarantee of a job or visa.
+The fixed **UGX 150,000** payment amount, provider credentials, payment rules, layout, and code are intentionally not editable here. Opportunity titles are checked against the currently published cards and are stored with application records. Changing the charge requires an authorized developer to update the database constraint, backend checkout, reconciliation, and tests together. Applicants must explicitly agree to the configured terms; never present the fee as a guarantee of a job or visa.
 
 Set these Edge Function secrets in the Supabase project. Do not put provider secrets in `.env`, React code, or browser-visible `VITE_` variables:
 
@@ -84,6 +85,8 @@ supabase functions deploy payment-status
 supabase functions deploy uploadthing
 supabase functions deploy flutterwave-webhook
 ```
+
+Redeploy `submit-application` after updating the site code so newly published opportunity titles are accepted in applications.
 
 Configure Flutterwave to send `charge.completed` events to:
 

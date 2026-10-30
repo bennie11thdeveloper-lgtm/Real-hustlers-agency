@@ -1,16 +1,5 @@
 import { ArrowRight, MoveUpRight } from 'lucide-react';
-import domesticWorkerImage from '../../Editz/Domestic-worker.jpg';
-import driverImage from '../../Editz/Driver.jpg';
-import machineOperatorImage from '../../Editz/Operator.jpg';
-import securityWorkerImage from '../../Editz/Security.webp';
 import './Opportunities.css';
-
-const roleImages = [
-  domesticWorkerImage,
-  driverImage,
-  securityWorkerImage,
-  machineOperatorImage,
-];
 
 export default function Opportunities({ content, roles, onApply }) {
   return (
@@ -25,10 +14,10 @@ export default function Opportunities({ content, roles, onApply }) {
             className={`role-card ${role.tone}`}
             key={role.number}
             type="button"
-            onClick={onApply}
+            onClick={() => onApply(role.label)}
             aria-label={`${role.label}: ${role.detail}. ${content.roleAction}`}
           >
-            <img className="role-image" src={roleImages[index]} alt="" />
+            <img className="role-image" src={role.image} alt="" />
             <span className="role-card-content">
               <span className="role-top"><span>{role.number} / ROLE</span></span>
               <span className="role-card-copy">

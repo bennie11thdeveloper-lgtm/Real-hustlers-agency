@@ -10,7 +10,6 @@ import {
 import { generateReactHelpers } from '@uploadthing/react';
 import siteLogo from '../Editz/20261014_121743.jpg';
 import { isSupabaseConfigured, supabase, uploadThingUrl } from './lib/supabase.js';
-import { defaultSiteContent } from './content.js';
 import Admin from './Admin.jsx';
 import AboutUs from './sections/AboutUs.jsx';
 import Carousel from './sections/Carousel.jsx';
@@ -66,7 +65,7 @@ function DocumentUploader({ submission, files, setFiles, uploadedCount, onUpload
   );
 }
 
-function ApplicationForm({ onClose, roles, content }) {
+function ApplicationForm({ onClose, roles, content, selectedRole }) {
   const [stage, setStage] = useState('details');
   const [submission, setSubmission] = useState(null);
   const [files, setFiles] = useState([]);
@@ -197,7 +196,7 @@ function ApplicationForm({ onClose, roles, content }) {
               </div>
               <label>
                 {content.applicationForm.roleLabel}
-                <select name="role" required defaultValue="">
+                <select name="role" required defaultValue={selectedRole}>
                   <option value="" disabled>{content.applicationForm.rolePlaceholder}</option>
                   {roles.map((role) => <option key={role.id} value={role.id}>{role.label}</option>)}
                   <option value="Other">{content.applicationForm.otherRole}</option>
@@ -291,15 +290,17 @@ function PaymentResult() {
 
 function PublicSite() {
   const [applicationOpen, setApplicationOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('');
   const content = useSiteContent();
   const roles = content.opportunities.roles.map((role, index) => ({
-    ...roleDesigns[index],
+    ...roleDesigns[index % roleDesigns.length],
     ...role,
-    id: defaultSiteContent.opportunities.roles[index].label,
+    id: role.label,
     number: String(index + 1).padStart(2, '0'),
   }));
 
-  function openApplication() {
+  function openApplication(role = '') {
+    setSelectedRole(typeof role === 'string' ? role : '');
     setApplicationOpen(true);
   }
 
@@ -322,7 +323,7 @@ function PublicSite() {
 
       <Footer content={content.footer} />
 
-      {applicationOpen && <ApplicationForm onClose={() => setApplicationOpen(false)} roles={roles} content={content} />}
+      {applicationOpen && <ApplicationForm onClose={() => setApplicationOpen(false)} roles={roles} content={content} selectedRole={selectedRole} />}
     </main>
   );
 }

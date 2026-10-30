@@ -123,6 +123,94 @@ function HeaderFields({ value, onChange, onUploadLogo, isUploadingLogo }) {
   );
 }
 
+function OpportunityFields({ value, onChange, onUploadImage, uploadingRoleIndex }) {
+  function updateRole(index, changes) {
+    onChange(value.roles.map((role, roleIndex) =>
+      roleIndex === index ? { ...role, ...changes } : role,
+    ));
+  }
+
+  return (
+    <div className="opportunity-editor">
+      <div className="header-links-heading">
+        <div>
+          <h2>Opportunity cards</h2>
+          <p>Manage each card’s title, description, and image. Images can be PNG, JPG, or WebP up to 2 MB.</p>
+        </div>
+        <button
+          className="editor-add-link"
+          type="button"
+          disabled={uploadingRoleIndex !== null}
+          onClick={() => onChange([
+            ...value.roles,
+            { label: '', detail: '', image: '' },
+          ])}
+        >
+          <Plus size={15} /> Add opportunity
+        </button>
+      </div>
+      <div className="opportunity-editor-list">
+        {value.roles.map((role, index) => (
+          <fieldset className="opportunity-editor-card" key={`opportunity-${index}`}>
+            <legend>Card {String(index + 1).padStart(2, '0')}</legend>
+            <div className="opportunity-editor-fields">
+              <label className="editor-field">
+                <span>Job title</span>
+                <input
+                  type="text"
+                  maxLength={120}
+                  value={role.label}
+                  placeholder="e.g. Hospitality workers"
+                  onChange={(event) => updateRole(index, { label: event.target.value })}
+                />
+              </label>
+              <label className="editor-field">
+                <span>Job description</span>
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={role.detail}
+                  placeholder="Describe the work or example roles"
+                  onChange={(event) => updateRole(index, { detail: event.target.value })}
+                />
+              </label>
+              <div className="opportunity-image-editor">
+                <span className="editor-field-label">Card image</span>
+                <div className="opportunity-image-controls">
+                  <img src={role.image || defaultSiteContent.opportunities.roles[index % defaultSiteContent.opportunities.roles.length].image} alt="" />
+                  <label className="button button-dark editor-upload-button" htmlFor={`opportunity-image-${index}`}>
+                    {uploadingRoleIndex === index
+                      ? <><LoaderCircle className="spinner" size={15} /> Uploading…</>
+                      : <><Upload size={15} /> {role.image ? 'Change image' : 'Add image'}</>}
+                  </label>
+                  <input
+                    id={`opportunity-image-${index}`}
+                    className="visually-hidden"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    disabled={uploadingRoleIndex !== null}
+                    onChange={(event) => onUploadImage(index, event)}
+                  />
+                </div>
+              </div>
+              <button
+                className="editor-remove-link opportunity-remove-card"
+                type="button"
+                disabled={uploadingRoleIndex !== null}
+                aria-label={`Delete ${role.label || `opportunity card ${index + 1}`}`}
+                onClick={() => onChange(value.roles.filter((_, roleIndex) => roleIndex !== index))}
+              >
+                <Trash2 size={16} /> Delete card
+              </button>
+            </div>
+          </fieldset>
+        ))}
+        {value.roles.length === 0 && <p className="header-links-empty">No opportunity cards yet. Add one to get started.</p>}
+      </div>
+    </div>
+  );
+}
+
 function ContentFields({ value, path = [], onChange }) {
   if (Array.isArray(value)) {
     return (
@@ -194,6 +282,7 @@ export default function Admin() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [uploadingRoleIndex, setUploadingRoleIndex] = useState(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -350,12 +439,40 @@ export default function Admin() {
       return;
     }
 
+    const roleLabels = content.opportunities.roles.map((role) => role.label.trim());
+    if (content.opportunities.roles.some((role) =>
+      role.label.trim().length < 2 ||
+      role.label.trim().length > 120 ||
+      !role.detail.trim() ||
+      role.label.trim().toLowerCase() === 'other',
+    )) {
+      setErrorMessage('Each opportunity needs a 2–120 character job title and a description. “Other” is reserved for the application form.');
+      return;
+    }
+    if (roleLabels.some((label, index) =>
+      roleLabels.findIndex((other) => other.toLowerCase() === label.toLowerCase()) !== index,
+    )) {
+      setErrorMessage('Each opportunity must have a unique job title.');
+      return;
+    }
+
     setIsSaving(true);
     setMessage('');
     setErrorMessage('');
+    const contentToSave = {
+      ...content,
+      opportunities: {
+        ...content.opportunities,
+        roles: content.opportunities.roles.map((role) => ({
+          ...role,
+          label: role.label.trim(),
+          detail: role.detail.trim(),
+        })),
+      },
+    };
     const { data, error } = await supabase
       .from('site_content')
-      .update({ content, updated_at: new Date().toISOString() })
+      .update({ content: contentToSave, updated_at: new Date().toISOString() })
       .eq('id', 'public')
       .select('id')
       .maybeSingle();
@@ -363,6 +480,7 @@ export default function Admin() {
     if (error || !data) {
       setErrorMessage('The changes could not be saved. Check your internet connection and admin permissions.');
     } else {
+      setContent(contentToSave);
       setMessage('Changes saved. Refresh the public website to see the latest content.');
     }
     setIsSaving(false);
@@ -376,6 +494,43 @@ export default function Admin() {
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
       setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
       return;
+    }
+
+    async function handleOpportunityImageUpload(index, event) {
+      const [file] = event.target.files ?? [];
+      event.target.value = '';
+      if (!file || !supabase || !isAdmin) return;
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+        setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
+        return;
+      }
+
+      setUploadingRoleIndex(index);
+      setErrorMessage('');
+      setMessage('');
+      const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+      const objectPath = `opportunity-images/${crypto.randomUUID()}.${extension}`;
+      try {
+        const { error } = await supabase.storage
+          .from('site-assets')
+          .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+        if (error) throw error;
+        const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
+        setContent((current) => ({
+          ...current,
+          opportunities: {
+            ...current.opportunities,
+            roles: current.opportunities.roles.map((role, roleIndex) =>
+              roleIndex === index ? { ...role, image: data.publicUrl } : role,
+            ),
+          },
+        }));
+        setMessage('Image uploaded. Save changes to publish it.');
+      } catch {
+        setErrorMessage('Image upload failed. Check the site-assets storage setup and try again.');
+      } finally {
+        setUploadingRoleIndex(null);
+      }
     }
 
     setIsUploadingLogo(true);
@@ -473,6 +628,16 @@ export default function Admin() {
                     onUploadLogo={handleLogoUpload}
                     isUploadingLogo={isUploadingLogo}
                   />
+                ) : activeSection === 'opportunities' ? (
+                  <OpportunityFields
+                    value={content.opportunities}
+                    onChange={(roles) => setContent((current) => ({
+                      ...current,
+                      opportunities: { ...current.opportunities, roles },
+                    }))}
+                    onUploadImage={handleOpportunityImageUpload}
+                    uploadingRoleIndex={uploadingRoleIndex}
+                  />
                 ) : (
                   <ContentFields
                     value={content[activeSection]}
@@ -483,7 +648,7 @@ export default function Admin() {
               </section>
               <div className="editor-actions">
                 <p>Edits are published when you save. The UGX 150,000 fee and job categories used for payment records are fixed settings.</p>
-                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
+                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo || uploadingRoleIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
               </div>
             </form>
           </>

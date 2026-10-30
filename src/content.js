@@ -1,4 +1,15 @@
 import siteLogo from '../Editz/20261014_121743.jpg';
+import domesticWorkerImage from '../Editz/Domestic-worker.jpg';
+import driverImage from '../Editz/Driver.jpg';
+import machineOperatorImage from '../Editz/Operator.jpg';
+import securityWorkerImage from '../Editz/Security.webp';
+
+const defaultOpportunityRoles = [
+  { label: 'Domestic workers', detail: 'Housekeeping · Caregiving · Home support', image: domesticWorkerImage },
+  { label: 'Drivers', detail: 'Personal · Commercial · Delivery', image: driverImage },
+  { label: 'Security workers', detail: 'Security · Site support · Stewarding', image: securityWorkerImage },
+  { label: 'Machine operators', detail: 'Equipment · Production · Skilled trades', image: machineOperatorImage },
+];
 
 export const defaultSiteContent = {
   navigation: {
@@ -39,12 +50,7 @@ export const defaultSiteContent = {
     titleFirst: 'Good work.',
     titleSecond: 'New horizons.',
     introduction: 'Your experience has value. Explore the kinds of roles we can help you learn more about, then start a conversation with our team.',
-    roles: [
-      { label: 'Domestic workers', detail: 'Housekeeping · Caregiving · Home support' },
-      { label: 'Drivers', detail: 'Personal · Commercial · Delivery' },
-      { label: 'Security workers', detail: 'Security · Site support · Stewarding' },
-      { label: 'Machine operators', detail: 'Equipment · Production · Skilled trades' },
-    ],
+    roles: defaultOpportunityRoles,
     roleAction: 'Ask us about this',
     fitNote: 'Not sure where you fit yet? That’s okay.',
     fitAction: 'Let’s talk about it',
@@ -146,6 +152,20 @@ export function normalizeSiteContent(content) {
       link && typeof link.label === 'string' && typeof link.href === 'string',
     )
     : legacyLinks;
+  const opportunities = content?.opportunities && typeof content.opportunities === 'object'
+    ? content.opportunities
+    : {};
+  const savedRoles = Array.isArray(opportunities.roles)
+    ? opportunities.roles
+      .filter((role) => role && typeof role.label === 'string' && typeof role.detail === 'string')
+      .map((role, index) => ({
+        ...defaultOpportunityRoles[index % defaultOpportunityRoles.length],
+        ...role,
+        image: typeof role.image === 'string' && role.image
+          ? role.image
+          : defaultOpportunityRoles[index % defaultOpportunityRoles.length].image,
+      }))
+    : defaultOpportunityRoles;
 
   return {
     ...defaultSiteContent,
@@ -154,6 +174,11 @@ export function normalizeSiteContent(content) {
       logo: typeof navigation.logo === 'string' ? navigation.logo : defaultSiteContent.navigation.logo,
       links: savedLinks,
       action: navigation.action ?? defaultSiteContent.navigation.action,
+    },
+    opportunities: {
+      ...defaultSiteContent.opportunities,
+      ...opportunities,
+      roles: savedRoles,
     },
   };
 }
