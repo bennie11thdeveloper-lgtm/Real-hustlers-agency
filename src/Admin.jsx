@@ -496,43 +496,6 @@ export default function Admin() {
       return;
     }
 
-    async function handleOpportunityImageUpload(index, event) {
-      const [file] = event.target.files ?? [];
-      event.target.value = '';
-      if (!file || !supabase || !isAdmin) return;
-      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-        setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
-        return;
-      }
-
-      setUploadingRoleIndex(index);
-      setErrorMessage('');
-      setMessage('');
-      const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
-      const objectPath = `opportunity-images/${crypto.randomUUID()}.${extension}`;
-      try {
-        const { error } = await supabase.storage
-          .from('site-assets')
-          .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
-        if (error) throw error;
-        const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
-        setContent((current) => ({
-          ...current,
-          opportunities: {
-            ...current.opportunities,
-            roles: current.opportunities.roles.map((role, roleIndex) =>
-              roleIndex === index ? { ...role, image: data.publicUrl } : role,
-            ),
-          },
-        }));
-        setMessage('Image uploaded. Save changes to publish it.');
-      } catch {
-        setErrorMessage('Image upload failed. Check the site-assets storage setup and try again.');
-      } finally {
-        setUploadingRoleIndex(null);
-      }
-    }
-
     setIsUploadingLogo(true);
     setErrorMessage('');
     setMessage('');
@@ -553,6 +516,43 @@ export default function Admin() {
       setErrorMessage('Logo upload failed. Check the site-assets storage setup and try again.');
     } finally {
       setIsUploadingLogo(false);
+    }
+  }
+
+  async function handleOpportunityImageUpload(index, event) {
+    const [file] = event.target.files ?? [];
+    event.target.value = '';
+    if (!file || !supabase || !isAdmin) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
+      return;
+    }
+
+    setUploadingRoleIndex(index);
+    setErrorMessage('');
+    setMessage('');
+    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+    const objectPath = `opportunity-images/${crypto.randomUUID()}.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from('site-assets')
+        .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
+      setContent((current) => ({
+        ...current,
+        opportunities: {
+          ...current.opportunities,
+          roles: current.opportunities.roles.map((role, roleIndex) =>
+            roleIndex === index ? { ...role, image: data.publicUrl } : role,
+          ),
+        },
+      }));
+      setMessage('Image uploaded. Save changes to publish it.');
+    } catch {
+      setErrorMessage('Image upload failed. Check the site-assets storage setup and try again.');
+    } finally {
+      setUploadingRoleIndex(null);
     }
   }
 
