@@ -116,8 +116,8 @@ export const defaultSiteContent = {
     experiencePlaceholder: 'What skills or experience would you like us to know about?',
     acknowledgementBefore: 'I have reviewed the',
     termsLinkLabel: 'fee and refund terms',
-    acknowledgementAfter: ', understand the registration and paperwork fee is UGX 150,000, and understand payment does not guarantee a job, visa, or employment.',
-    feeDisclosure: 'Submitting creates your application and payment link. You will only be charged if you approve payment at Flutterwave. Payment does not guarantee job placement, a visa, or employment.',
+    acknowledgementAfter: ', understand the agency fee and payment terms, and understand payment does not guarantee a job, visa, or employment.',
+    feeDisclosure: 'Submitting creates your application and payment link. Payment does not guarantee job placement, a visa, or employment.',
     termsPrompt: 'Read the fee and refund terms.',
     notConfigured: 'Online applications are not configured yet. Please contact the agency.',
     termsMissing: 'The agency must publish and link its fee and refund terms before online applications can accept a payment.',
@@ -125,7 +125,7 @@ export const defaultSiteContent = {
     submitAction: 'Submit application',
     receivedEyebrow: 'APPLICATION RECEIVED',
     receivedTitle: 'Your next step is ready.',
-    receivedIntroduction: 'Your application is saved. Add any supporting documents now, or skip this step and continue to secure Flutterwave checkout.',
+    receivedIntroduction: 'Your application is saved. Add any supporting documents now, or skip this step and continue to secure payment.',
     notificationWarning: 'Keep this page open so you can continue to payment.',
     documentsTitle: 'Supporting documents',
     documentsOptional: 'Optional',
@@ -134,9 +134,15 @@ export const defaultSiteContent = {
     documentsSuccessMultiple: 'documents uploaded privately',
     documentsUploadAction: 'Upload documents',
     uploading: 'Uploading…',
-    paymentAfterSubmission: 'Payment is completed only when you approve it with your mobile money provider.',
+    paymentAfterSubmission: 'Payment is completed only after confirmation from your selected provider.',
     continuePayment: 'Continue to secure payment',
     closedPageNote: 'If you close this page before paying, use the payment link sent to your phone or email. Your application remains saved.',
+  },
+  payments: {
+    feeUgx: 150000,
+    usdConversion: 'automatic',
+    terms: '',
+    enabledProviders: ['flutterwave'],
   },
   paymentTermsUrl: '',
 };
@@ -182,6 +188,13 @@ export function normalizeSiteContent(content) {
       (typeof member.image === 'string' || member.image == null),
     ).map((member) => ({ ...member, image: member.image ?? '' }))
     : [];
+  const payments = content?.payments && typeof content.payments === 'object'
+    ? content.payments
+    : {};
+  const allowedProviders = ['flutterwave', 'paypal', 'pesapal', 'mtn_momo', 'airtel_money'];
+  const enabledProviders = Array.isArray(payments.enabledProviders)
+    ? payments.enabledProviders.filter((provider) => allowedProviders.includes(provider))
+    : defaultSiteContent.payments.enabledProviders;
 
   return {
     ...defaultSiteContent,
@@ -200,6 +213,15 @@ export function normalizeSiteContent(content) {
       ...defaultSiteContent.about,
       ...about,
       team: savedTeam,
+    },
+    payments: {
+      ...defaultSiteContent.payments,
+      ...payments,
+      feeUgx: Number.isSafeInteger(payments.feeUgx) && payments.feeUgx > 0
+        ? payments.feeUgx
+        : defaultSiteContent.payments.feeUgx,
+      terms: typeof payments.terms === 'string' ? payments.terms : '',
+      enabledProviders,
     },
   };
 }

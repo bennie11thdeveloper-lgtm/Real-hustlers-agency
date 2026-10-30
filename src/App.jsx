@@ -21,6 +21,13 @@ import Opportunities from './sections/Opportunities.jsx';
 import { useSiteContent } from './useSiteContent.js';
 
 const { useUploadThing } = generateReactHelpers({ url: uploadThingUrl });
+const paymentProviders = {
+  flutterwave: { label: 'Mobile money', currencies: ['UGX'] },
+  paypal: { label: 'PayPal', currencies: ['USD'] },
+  pesapal: { label: 'Pesapal', currencies: ['UGX', 'USD'] },
+  mtn_momo: { label: 'MTN Mobile Money', currencies: ['UGX'] },
+  airtel_money: { label: 'Airtel Money', currencies: ['UGX'] },
+};
 const roleDesigns = [
   { icon: '✳', tone: 'peach' },
   { icon: '↗', tone: 'lime' },
@@ -67,6 +74,8 @@ function DocumentUploader({ submission, files, setFiles, uploadedCount, onUpload
 
 function ApplicationForm({ onClose, roles, content, selectedRole }) {
   const [stage, setStage] = useState('details');
+  const [provider, setProvider] = useState(content.payments.enabledProviders[0] || '');
+  const [currency, setCurrency] = useState(provider === 'paypal' ? 'USD' : 'UGX');
   const [submission, setSubmission] = useState(null);
   const [files, setFiles] = useState([]);
   const [uploadedCount, setUploadedCount] = useState(0);
@@ -81,6 +90,13 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
     hasValidPaymentTermsUrl = false;
   }
   const isApplicationConfigured = isSupabaseConfigured && hasValidPaymentTermsUrl;
+  const availableProviders = content.payments.enabledProviders.filter((name) =>
+    paymentProviders[name] && (name !== 'flutterwave' || currency === 'UGX'),
+  );
+  const availableCurrencies = paymentProviders[provider]?.currencies ?? [];
+  const feeDisclosure = currency === 'USD'
+    ? `Base fee: UGX ${Number(content.payments.feeUgx).toLocaleString('en-UG')}. The USD amount is calculated using the current exchange rate before checkout.`
+    : `Registration and paperwork: UGX ${Number(content.payments.feeUgx).toLocaleString('en-UG')}.`;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -97,6 +113,8 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
           email: formData.get('email'),
           role: formData.get('role'),
           experience: formData.get('experience'),
+          provider,
+          currency,
           feeAcknowledged: formData.get('feeAcknowledged') === 'on',
         },
       });
@@ -169,7 +187,7 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
                 content={content}
               />
             )}
-            <p className="payment-disclosure"><strong>Registration and paperwork: UGX 150,000.</strong> {content.applicationForm.paymentAfterSubmission} It does not guarantee job placement, a visa, or employment. <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">Read the agency’s fee and refund terms</a> before paying.</p>
+            <p className="payment-disclosure"><strong>{submission.currency} {Number(submission.amount).toLocaleString('en-US', { minimumFractionDigits: submission.currency === 'USD' ? 2 : 0, maximumFractionDigits: 2 })}.</strong> Payment does not guarantee job placement, a visa, or employment. <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">Read the agency’s fee and refund terms</a> before paying.</p>
             {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
             <button className="button button-dark" type="button" onClick={() => window.location.assign(submission.checkoutUrl)}>{content.applicationForm.continuePayment} <ArrowRight size={16} /></button>
             <p className="form-note">{content.applicationForm.closedPageNote}</p>
@@ -194,6 +212,36 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
                   <input name="email" type="email" autoComplete="email" placeholder={content.applicationForm.emailPlaceholder} required />
                 </label>
               </div>
+              <div className="form-row">
+                <label>
+                  Payment method
+                  <select
+                    name="paymentProvider"
+                    required
+                    value={provider}
+                    onChange={(event) => {
+                      const nextProvider = event.target.value;
+                      setProvider(nextProvider);
+                      setCurrency(paymentProviders[nextProvider]?.currencies[0] ?? 'UGX');
+                    }}
+                  >
+                    {availableProviders.map((name) => (
+                      <option key={name} value={name}>{paymentProviders[name].label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Currency
+                  <select
+                    name="paymentCurrency"
+                    required
+                    value={currency}
+                    onChange={(event) => setCurrency(event.target.value)}
+                  >
+                    {availableCurrencies.map((code) => <option key={code} value={code}>{code}</option>)}
+                  </select>
+                </label>
+              </div>
               <label>
                 {content.applicationForm.roleLabel}
                 <select name="role" required defaultValue={selectedRole}>
@@ -209,14 +257,16 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
               {hasValidPaymentTermsUrl && (
                 <label className="fee-acknowledgement">
                   <input name="feeAcknowledged" type="checkbox" required />
-                  <span>{content.applicationForm.acknowledgementBefore} <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">{content.applicationForm.termsLinkLabel}</a>{content.applicationForm.acknowledgementAfter}</span>
+                  <span>{content.applicationForm.acknowledgementBefore} <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">{content.applicationForm.termsLinkLabel}</a>, understand the fee is {feeDisclosure} and understand payment does not guarantee a job, visa, or employment.</span>
                 </label>
               )}
-              <p className="payment-disclosure"><strong>Registration and paperwork: UGX 150,000.</strong> {content.applicationForm.feeDisclosure} {hasValidPaymentTermsUrl && <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">{content.applicationForm.termsPrompt}</a>}</p>
+              <p className="payment-disclosure"><strong>{feeDisclosure}</strong> {hasValidPaymentTermsUrl && <a href={content.paymentTermsUrl} target="_blank" rel="noreferrer">{content.applicationForm.termsPrompt}</a>}</p>
+              {content.payments.terms && <details className="payment-terms-details"><summary>Payment, refund, and service terms</summary><p>{content.payments.terms}</p></details>}
+              {!availableProviders.length && <p className="form-warning">The agency has not enabled a payment method yet. Please contact the agency.</p>}
               {!isSupabaseConfigured && <p className="form-warning">{content.applicationForm.notConfigured}</p>}
               {isSupabaseConfigured && !hasValidPaymentTermsUrl && <p className="form-warning">{content.applicationForm.termsMissing}</p>}
               {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
-              <button className="button button-dark form-submit" type="submit" disabled={isSubmitting || !isApplicationConfigured}>
+              <button className="button button-dark form-submit" type="submit" disabled={isSubmitting || !isApplicationConfigured || !provider || !currency}>
                 {isSubmitting ? <><LoaderCircle className="spinner" size={16} /> {content.applicationForm.submitting}</> : <>{content.applicationForm.submitAction} <ArrowRight size={16} /></>}
               </button>
             </form>
@@ -229,33 +279,41 @@ function ApplicationForm({ onClose, roles, content, selectedRole }) {
 
 function PaymentResult() {
   const txRef = new URLSearchParams(window.location.search).get('tx_ref');
-  const [status, setStatus] = useState('checking');
+  const [payment, setPayment] = useState({ status: 'checking' });
   const [errorMessage, setErrorMessage] = useState('');
+  const [canRetry, setCanRetry] = useState(false);
+  const [retryVersion, setRetryVersion] = useState(0);
+  const status = payment.status;
 
   useEffect(() => {
     if (!txRef || !supabase) {
-      setStatus('unavailable');
+      setPayment({ status: 'unavailable' });
+      setCanRetry(true);
       return undefined;
     }
 
     let active = true;
     let attempts = 0;
     let timer;
+    setCanRetry(false);
     const checkStatus = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('payment-status', { body: { txRef } });
         if (error) throw new Error('Payment status is temporarily unavailable.');
         if (!active) return;
-        setStatus(data.status);
+        setPayment(data);
         setErrorMessage('');
         attempts += 1;
-        if (data.status === 'pending' && attempts < 20) {
-          timer = window.setTimeout(checkStatus, 3000);
+        if (data.status === 'pending' && attempts < 30) {
+          timer = window.setTimeout(checkStatus, 5000);
+        } else {
+          setCanRetry(data.status === 'pending');
         }
       } catch (error) {
         if (!active) return;
         setErrorMessage(error instanceof Error ? error.message : 'Payment status is temporarily unavailable.');
-        setStatus('unavailable');
+        setPayment({ status: 'unavailable' });
+        setCanRetry(true);
       }
     };
 
@@ -264,7 +322,7 @@ function PaymentResult() {
       active = false;
       window.clearTimeout(timer);
     };
-  }, [txRef]);
+  }, [txRef, retryVersion]);
 
   const paid = status === 'paid';
   return (
@@ -275,13 +333,27 @@ function PaymentResult() {
         <p className="eyebrow">{paid ? 'PAYMENT CONFIRMED' : status === 'failed' || status === 'cancelled' ? 'PAYMENT NOT COMPLETED' : 'PAYMENT STATUS'}</p>
         <h1>{paid ? 'You’re all set.' : status === 'failed' || status === 'cancelled' ? 'Payment wasn’t completed.' : status === 'unavailable' ? 'We couldn’t confirm it here.' : 'We’re confirming your payment.'}</h1>
         <p>{paid
-          ? 'Your UGX 150,000 payment is confirmed. The agency will follow up about your application by SMS or email.'
+          ? `Your ${payment.currency || ''} ${payment.amount == null ? '' : Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: payment.currency === 'USD' ? 2 : 0, maximumFractionDigits: 2 })} payment is confirmed. The agency will follow up about your application by SMS or email.`
           : status === 'failed' || status === 'cancelled'
             ? 'Your application is saved, but payment has not been confirmed. Use the payment link sent to you or contact the agency for help.'
             : status === 'unavailable'
               ? 'We could not confirm your payment on this page. Check your SMS or email for an update, or contact the agency before making another payment.'
-              : 'Flutterwave is processing your payment. This page checks for confirmation automatically. You can safely wait here; we’ll also send a confirmation by SMS or email.'}</p>
+              : 'Your payment provider is processing the payment. This page checks for confirmation automatically. You can safely wait here; we’ll also send a confirmation by SMS or email.'}</p>
         {errorMessage && <p className="form-warning">{errorMessage} Check your SMS or email, or contact the agency.</p>}
+        {txRef && supabase && canRetry && (
+          <button
+            className="button button-dark"
+            type="button"
+            onClick={() => {
+              setCanRetry(false);
+              setErrorMessage('');
+              setPayment({ status: 'checking' });
+              setRetryVersion((version) => version + 1);
+            }}
+          >
+            Check payment status again <ArrowRight size={16} />
+          </button>
+        )}
         <a className="button button-dark" href="/">Back to Real Hustlers <ArrowRight size={16} /></a>
       </section>
     </main>

@@ -10,7 +10,7 @@ const serviceRoleKey = requiredEnvironmentValue("SUPABASE_SERVICE_ROLE_KEY");
 export async function databaseRequest<T>(
   table: string,
   query: string,
-  options: { method?: string; body?: unknown; returnRepresentation?: boolean } = {},
+  options: { method?: string; body?: unknown; returnRepresentation?: boolean; prefer?: string } = {},
 ): Promise<T> {
   const headers = new Headers({
     apikey: serviceRoleKey,
@@ -18,6 +18,7 @@ export async function databaseRequest<T>(
     "Content-Type": "application/json",
   });
   if (options.returnRepresentation) headers.set("Prefer", "return=representation");
+  if (options.prefer) headers.set("Prefer", options.prefer);
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${table}${query}`, {
     method: options.method ?? "GET",

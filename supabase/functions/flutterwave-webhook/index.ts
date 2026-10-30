@@ -49,12 +49,14 @@ Deno.serve(async (request) => {
       amount: number;
       currency: string;
       status: string;
+      provider: string;
     }>>(
       "application_payments",
-      `?tx_ref=eq.${encodeURIComponent(transaction.tx_ref)}&select=id,application_id,amount,currency,status&limit=1`,
+      `?tx_ref=eq.${encodeURIComponent(transaction.tx_ref)}&select=id,application_id,amount,currency,status,provider&limit=1`,
     );
     const payment = payments[0];
     if (!payment) return jsonResponse({ error: "Payment reference not found." }, 404);
+    if (payment.provider !== "flutterwave") return jsonResponse({ error: "Payment provider does not match." }, 400);
     if (Number(transaction.amount) !== payment.amount || transaction.currency !== payment.currency) {
       console.error("Flutterwave transaction amount or currency did not match the payment record.");
       return jsonResponse({ error: "Transaction amount or currency mismatch." }, 400);

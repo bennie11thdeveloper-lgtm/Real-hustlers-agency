@@ -75,7 +75,7 @@
       <div class="brand"><span class="brand-mark">RH<span>.</span></span><span class="brand-label">REAL<br />HUSTLERS</span></div>
       <p class="eyebrow">AGENCY OWNER’S QUICK GUIDE</p>
       <h1>Account access<br />&amp; website editing<br /><span>made simpler.</span></h1>
-      <p class="cover-intro">A practical guide to your five service accounts, the one-time launch setup, and updating website information from your own secure admin page.</p>
+      <p class="cover-intro">A practical guide to your service accounts, the one-time launch setup, and updating website information and payment settings from your secure admin page.</p>
       <div class="cover-callout"><strong>After initial setup, you can edit the website without returning to a backend dashboard.</strong> Sign in to your website’s private content editor, make the change, and save.</div>
       <p class="cover-footer">REAL HUSTLERS’ AGENCY &nbsp;·&nbsp; UGANDA</p>
     </section>
@@ -90,14 +90,17 @@
           <tr><td><strong>Supabase</strong></td><td>PostgreSQL database, admin sign-in, secure website copy.</td><td>Website editor for copy. Dashboard for initial setup only.</td></tr>
           <tr><td><strong>UploadThing</strong></td><td>Private storage for applicant documents.</td><td>Provider dashboard for storage/account settings.</td></tr>
           <tr><td><strong>Flutterwave</strong></td><td>UGX checkout using supported Uganda mobile-money methods.</td><td>Provider dashboard for settlement, payment activity, and account settings.</td></tr>
+          <tr><td><strong>PayPal</strong></td><td>USD hosted checkout.</td><td>Admin editor for encrypted API credentials; provider dashboard for settlement settings.</td></tr>
+          <tr><td><strong>Pesapal</strong></td><td>Hosted UGX/USD checkout where enabled on the merchant account.</td><td>Admin editor for encrypted API credentials; provider dashboard for settlement settings.</td></tr>
+          <tr><td><strong>MTN MoMo / Airtel Money</strong></td><td>Direct UGX mobile-money collection.</td><td>Admin editor for encrypted API credentials; provider dashboard for merchant and payout setup.</td></tr>
           <tr><td><strong>Africa’s Talking</strong></td><td>SMS confirmations and application messages to Uganda numbers.</td><td>Provider dashboard for SMS balance, sender settings, and activity.</td></tr>
           <tr><td><strong>Resend</strong></td><td>Applicant and agency email notifications.</td><td>Provider dashboard for verified domains and email activity.</td></tr>
         </tbody>
       </table>
-      <div class="callout warning"><strong>Project status:</strong> The React app and integration code are prepared, but no real provider credentials or Supabase project details have been supplied. The app is not connected to live accounts or deployed on your domain yet. Complete the one-time launch setup before collecting applications or payments.</div>
+      <div class="callout warning"><strong>Project status:</strong> Payment integrations require approved provider business accounts, credentials, database migration, and deployed Edge Functions. Test every method using sandbox accounts before enabling live payments.</div>
       <h3>Important distinction</h3>
       <p>You access each account using the email and password you choose when registering with that provider. This guide contains sign-in links, never passwords or secret API keys. Account access does not automatically mean the website integration is configured.</p>
-      <p class="small">Never send passwords, verification codes, Flutterwave secret keys, Resend keys, Africa’s Talking keys, UploadThing tokens, or Supabase service-role keys in email or chat.</p>
+      <p class="small">Never send passwords, verification codes, provider API keys, the credential-encryption key, or Supabase service-role keys in email or chat.</p>
     </section>
 
     <section class="page">
@@ -117,6 +120,10 @@
         <div><h3><a href="https://app.flutterwave.com/">app.flutterwave.com</a></h3><p>Complete business verification and confirm your account can accept UGX payments and Uganda mobile money, including the intended MTN and Airtel options. Test in test mode before live payments.</p></div>
       </div>
       <div class="portal">
+        <strong>PayPal, Pesapal, MTN MoMo, and Airtel Money</strong>
+        <div><h3><a href="https://developer.paypal.com/dashboard/">PayPal</a> · <a href="https://developer.pesapal.com/">Pesapal</a> · <a href="https://momodeveloper.mtn.com/">MTN MoMo</a> · <a href="https://developers.airtel.africa/">Airtel Africa</a></h3><p>Complete merchant verification and confirm your business can collect in Uganda and settle to the intended destination. Create sandbox credentials before live credentials. PayPal availability and withdrawals depend on the merchant's registered country and account.</p></div>
+      </div>
+      <div class="portal">
         <strong>Africa’s Talking</strong>
         <div><h3><a href="https://account.africastalking.com/">account.africastalking.com</a></h3><p>Set up the account, obtain an API key, and confirm Uganda SMS access, sender rules, and credit. Use the sandbox username only with sandbox credentials.</p></div>
       </div>
@@ -130,14 +137,14 @@
     <section class="page">
       <p class="section-tag">03 / ONE-TIME WEBSITE ACTIVATION</p>
       <h2>Set up before launch</h2>
-      <p class="lead">A developer or trusted technical administrator completes these initial deployment tasks once. Provider credentials go into the Supabase secret manager—not React code or the website editor.</p>
+      <p class="lead">A developer or trusted technical administrator completes these initial deployment tasks once. The encryption key and platform credentials stay in Supabase; provider API credentials are entered later in the admin editor and encrypted server-side.</p>
       <div class="step"><span class="step-number">1</span><div><strong>Create a Supabase project</strong><p>Copy the project URL and publishable/anon key into the site’s public deployment settings. Never use the service-role key in the browser.</p></div></div>
-      <div class="step"><span class="step-number">2</span><div><strong>Apply the five database migrations in order</strong><p>Run <code>20261013000000_create_applications_and_payments.sql</code>, <code>20261013010000_add_site_content_editor.sql</code>, <code>20261030000000_add_public_site_assets.sql</code>, <code>20261030010000_allow_editable_opportunity_roles.sql</code>, and <code>20261030020000_enable_site_content_realtime.sql</code>. They create protected applicant/payment records, admin-editable website copy, a public website-image bucket that only approved admins can upload to, support for admin-managed opportunity titles, and live updates for visitors with the site already open. Applicant documents remain private.</p></div></div>
-      <div class="step"><span class="step-number">3</span><div><strong>Add server-side provider secrets</strong><p>In the Supabase project, add <code>APP_ORIGIN</code>, <code>APP_SITE_URL</code>, <code>FLW_SECRET_KEY</code>, <code>FLW_WEBHOOK_SECRET_HASH</code>, <code>UPLOADTHING_TOKEN</code>, <code>RESEND_API_KEY</code>, <code>RESEND_FROM_EMAIL</code>, <code>AT_API_KEY</code>, <code>AT_USERNAME</code>, and optional <code>AGENCY_NOTIFICATION_EMAIL</code>.</p></div></div>
-      <div class="step"><span class="step-number">4</span><div><strong>Deploy the Supabase Edge Functions</strong><p>Deploy <code>submit-application</code>, <code>payment-status</code>, <code>uploadthing</code>, and <code>flutterwave-webhook</code>. Redeploy <code>submit-application</code> when updating the site code so new opportunity titles are accepted. Configure Flutterwave’s <code>charge.completed</code> webhook to <code>https://YOUR_PROJECT.supabase.co/functions/v1/flutterwave-webhook</code> and enter the matching webhook secret hash.</p></div></div>
+      <div class="step"><span class="step-number">2</span><div><strong>Apply all six database migrations in order</strong><p>Run <code>20261013000000_create_applications_and_payments.sql</code>, <code>20261013010000_add_site_content_editor.sql</code>, <code>20261030000000_add_public_site_assets.sql</code>, <code>20261030010000_allow_editable_opportunity_roles.sql</code>, <code>20261030020000_enable_site_content_realtime.sql</code>, and <code>20261030030000_add_payment_configuration.sql</code>. The last migration adds currencies/provider records and a credentials table that is inaccessible to browser roles.</p></div></div>
+      <div class="step"><span class="step-number">3</span><div><strong>Set the credential-encryption key and server settings</strong><p>Generate a base64-encoded random 32-byte key on your computer with <code>node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"</code>. Add it to Supabase Edge Function Secrets as <code>PAYMENT_CREDENTIALS_ENCRYPTION_KEY</code>. Keep a secure backup: replacing or losing this key makes saved credentials unreadable. Also set <code>APP_ORIGIN</code>, <code>APP_SITE_URL</code>, <code>FLW_SECRET_KEY</code>, <code>FLW_WEBHOOK_SECRET_HASH</code>, <code>UPLOADTHING_TOKEN</code>, <code>RESEND_API_KEY</code>, <code>RESEND_FROM_EMAIL</code>, <code>AT_API_KEY</code>, <code>AT_USERNAME</code>, and optional <code>AGENCY_NOTIFICATION_EMAIL</code>.</p></div></div>
+      <div class="step"><span class="step-number">4</span><div><strong>Deploy the Supabase Edge Functions</strong><p>Deploy <code>submit-application</code>, <code>payment-status</code>, <code>payment-credentials</code>, <code>pesapal-ipn</code>, <code>uploadthing</code>, and <code>flutterwave-webhook</code>. Configure Flutterwave’s <code>charge.completed</code> webhook to <code>https://YOUR_PROJECT.supabase.co/functions/v1/flutterwave-webhook</code> and enter the matching webhook secret hash. Pesapal notifications are registered by the checkout flow.</p></div></div>
       <div class="step"><span class="step-number">5</span><div><strong>Invite the agency owner as the first editor</strong><p>In Supabase Authentication → Users, invite the owner’s email and complete the invitation. Add the exact user ID to <code>public.site_admins</code> once, using the SQL instruction in the project’s README. Do not grant access to unknown users.</p></div></div>
-      <div class="step"><span class="step-number">6</span><div><strong>Connect and test the public domain</strong><p>Set the production domain as the app origin and authentication redirect. Check form submissions, private file uploads, SMS/email delivery, Flutterwave test checkout, signed webhook verification, and return-page status. Only then switch to approved live credentials.</p></div></div>
-      <div class="callout warning"><strong>Candidate fee:</strong> The current checkout is fixed at <strong>UGX 150,000</strong>. Publish the agency’s precise registration/paperwork service, fee, refund terms, privacy notice, and contact details. Check the fee and overseas-recruitment rules with qualified local counsel and licensing authorities before accepting candidate payments. A payment does not promise a job, visa, or employment.</div>
+      <div class="step"><span class="step-number">6</span><div><strong>Connect and test the public domain</strong><p>Set the production domain as the app origin and authentication redirect. In the admin editor, enter sandbox API credentials, enable each method, and verify successful, failed, and cancelled payment flows for every method and currency. Confirm the saved amount, provider status, receipt, and settlement destination before switching any provider to live.</p></div></div>
+      <div class="callout warning"><strong>Candidate fee:</strong> The default is <strong>UGX 150,000</strong> and is editable by an authorized admin. USD amounts use a fresh UGX/USD rate for each checkout and fail closed if the rate service is unavailable. Publish the exact service, fee, refund terms, privacy notice, and contact details. Check candidate-fee and overseas-recruitment rules with qualified local counsel and licensing authorities before accepting payments. A payment does not promise a job, visa, or employment.</div>
     </section>
 
     <section class="page">
@@ -147,7 +154,7 @@
       <a class="admin-url" href="https://YOUR_DOMAIN/admin">Open the Real Hustlers content editor → /admin</a>
       <div class="step"><span class="step-number">1</span><div><strong>Go to the admin page</strong><p>Visit your deployed address followed by <code>/admin</code>—for example, <code>https://realhustlers.ug/admin</code>. Bookmark this private sign-in page.</p></div></div>
       <div class="step"><span class="step-number">2</span><div><strong>Sign in using your invited agency account</strong><p>Use the email address and password from your owner invitation. Select “Forgot your password?” if necessary; follow the secure email link and set a new password on the admin page.</p></div></div>
-      <div class="step"><span class="step-number">3</span><div><strong>Edit by website section</strong><p>In <strong>Header</strong>, upload a PNG, JPG, or WebP logo up to 2 MB, then add, remove, or edit navigation link text and destinations. In <strong>Opportunities</strong>, add or delete job cards, edit titles and descriptions, and upload or change each card’s image. In <strong>About us</strong>, edit the agency copy and add team members with their names, positions, and portrait images. Other tabs organize hero wording, how-it-works steps, application-form labels/instructions, buttons, footer copy, and the terms link.</p></div></div>
+      <div class="step"><span class="step-number">3</span><div><strong>Edit by website section</strong><p>In <strong>Header</strong>, upload a PNG, JPG, or WebP logo up to 2 MB, then add, remove, or edit navigation link text and destinations. In <strong>Opportunities</strong>, add or delete job cards, edit titles and descriptions, and upload or change each card’s image. In <strong>About us</strong>, edit the agency copy and add team members with their names, positions, and portrait images. In <strong>Payments &amp; fees</strong>, edit the UGX fee, terms and terms URL; enter sandbox/live provider credentials; and enable only configured methods. USD is converted from UGX using the current rate. Settlement destinations are set in the provider's merchant dashboard.</p></div></div>
       <div class="step"><span class="step-number">4</span><div><strong>Save and review</strong><p>Select <strong>Save changes</strong> and wait for the success message. Once the realtime migration is applied, open public pages receive published copy updates automatically. Choose “View public site” to review.</p></div></div>
       <div class="step"><span class="step-number">5</span><div><strong>Keep account access controlled</strong><p>Sign out on shared devices. Give admin access only to trusted editors. To add or remove editors, ask the technical administrator to update the authorized admin list—do not share one person’s password with the whole team.</p></div></div>
       <div class="callout"><strong>Routine edits do not need:</strong> a code editor, an npm command, a database table editor, or access to the Supabase/hosting backend. They only need your website URL, admin login, and an internet connection.</div>
@@ -159,29 +166,29 @@
       <table>
         <thead><tr><th>Editable on /admin</th><th>Protected / one-time technical configuration</th></tr></thead>
         <tbody>
-          <tr><td>Public-page wording, headings, descriptions, calls to action, job-card titles/details, and displayed process steps.</td><td>UGX 150,000 charge amount and its database/payment verification rules.</td></tr>
-          <tr><td>Application form field labels and instructions; the HTTPS address of the published fee/refund terms.</td><td>Provider passwords, API keys, webhook secret, Supabase service-role key, and database/security policies.</td></tr>
-          <tr><td>Agency introduction, public footer text, header logo and links, opportunity-card titles, descriptions and images, and team names, positions, and portraits.</td><td>How payments are confirmed; applicant files/database access; hero artwork/layout, application code, or new features.</td></tr>
+          <tr><td>Public-page wording, headings, descriptions, calls to action, job-card titles/details, and displayed process steps.</td><td>Database/payment verification rules and gateway integration code.</td></tr>
+          <tr><td>Application form labels; UGX fee; payment terms and terms URL; provider credentials through the encrypted server-side editor; enabled payment methods.</td><td>Credential-encryption key, webhook secret, Supabase service-role key, database/security policies, and merchant settlement destination settings.</td></tr>
+          <tr><td>Agency introduction, public footer text, header logo and links, opportunity-card titles, descriptions and images, and team names, positions, and portraits.</td><td>Payment verification rules and provider APIs; applicant files/database access; hero artwork/layout, application code, or new features.</td></tr>
         </tbody>
       </table>
       <h3>The application or Save button is disabled</h3>
       <ul>
         <li>The public Supabase project may not have been configured or deployed.</li>
-        <li>Publish the real agency fee/refund terms page over HTTPS and enter its complete URL in **Payment Terms Url** in the editor. Save the content.</li>
+        <li>Publish the real agency fee/refund terms page over HTTPS and enter its complete URL in **Payments &amp; fees**. Save the content.</li>
         <li>Do not use a placeholder or a terms link you have not reviewed.</li>
       </ul>
       <h3>Admin sign-in works, but the editor will not load</h3>
       <ul>
-        <li>Ask your technical administrator to confirm all five database migrations were applied and that your signed-in account was explicitly added to the admin list.</li>
+        <li>Ask your technical administrator to confirm all six database migrations were applied and that your signed-in account was explicitly added to the admin list.</li>
         <li>Try reloading the page and signing in again. Password recovery requires the deployed <code>/admin</code> URL to be on the allowed Supabase redirect list.</li>
       </ul>
       <h3>Payment or message did not arrive</h3>
       <ul>
-        <li>Check the Flutterwave transaction dashboard. A browser return alone does not confirm payment; the verified webhook does.</li>
+        <li>Check the selected provider's transaction dashboard. A browser return alone does not confirm payment; the backend verifies the provider's transaction status, amount, and currency.</li>
         <li>Check SMS account credits and the applicant’s Ugandan number. Check Resend delivery logs and sender-domain verification.</li>
         <li>Do not ask an applicant to pay a second time until checking the original transaction.</li>
       </ul>
-      <div class="callout warning"><strong>Security &amp; privacy:</strong> Do not collect real applicant documents until the private UploadThing ACL is confirmed. Restrict staff access, keep provider secrets secret, and do not store passwords or applicant documents in the content editor.</div>
+      <div class="callout warning"><strong>Security &amp; privacy:</strong> Do not collect real applicant documents until the private UploadThing ACL is confirmed. Keep the Supabase encryption key and platform secrets in Supabase; the website editor stores provider credentials encrypted and never displays saved values. Do not store passwords or applicant documents in the content editor.</div>
       <p class="footer-line">Project setup details and the exact first-admin SQL are in the included <strong>README.md</strong>. For changes to the fee, integration behavior, or page structure, contact an authorized developer. This guide does not contain account passwords or secret API keys.</p>
     </section>
   </body>

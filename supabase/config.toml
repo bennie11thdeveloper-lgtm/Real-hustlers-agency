@@ -9,3 +9,9 @@ verify_jwt = false
 
 [functions.flutterwave-webhook]
 verify_jwt = false
+
+[functions.payment-credentials]
+verify_jwt = false
+
+[functions.pesapal-ipn]
+verify_jwt = false

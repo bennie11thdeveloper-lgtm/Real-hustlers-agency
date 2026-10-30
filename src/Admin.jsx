@@ -15,8 +15,15 @@ const contentSections = [
   { key: 'closing', label: 'Final call to action' },
   { key: 'footer', label: 'Footer' },
   { key: 'applicationForm', label: 'Application form' },
-  { key: 'paymentTermsUrl', label: 'Payment terms' },
+  { key: 'payments', label: 'Payments & fees' },
 ];
+
+const paymentCredentialFields = {
+  paypal: { label: 'PayPal', fields: [['clientId', 'Client ID'], ['clientSecret', 'Client secret']] },
+  pesapal: { label: 'Pesapal', fields: [['consumerKey', 'Consumer key'], ['consumerSecret', 'Consumer secret']] },
+  mtn_momo: { label: 'MTN Mobile Money', fields: [['subscriptionKey', 'Subscription key'], ['apiUser', 'API user'], ['apiKey', 'API key']] },
+  airtel_money: { label: 'Airtel Money', fields: [['clientId', 'Client ID'], ['clientSecret', 'Client secret']] },
+};
 
 class ContentSectionBoundary extends Component {
   state = { hasError: false };
@@ -354,6 +361,177 @@ function AboutFields({ value, onChange, onUploadImage, uploadingTeamIndex }) {
   );
 }
 
+function ProviderCredentialForm({ provider, status, onSave, onDelete, isSaving }) {
+  const [environment, setEnvironment] = useState(status?.environment ?? 'sandbox');
+  const [credentials, setCredentials] = useState({});
+  const definition = paymentCredentialFields[provider];
+
+  useEffect(() => {
+    setEnvironment(status?.environment ?? 'sandbox');
+  }, [status?.environment]);
+
+  async function save() {
+    const saved = await onSave(provider, { ...credentials, environment });
+    if (saved) setCredentials({});
+  }
+
+  return (
+    <fieldset className="payment-provider-card">
+      <legend>{definition.label}</legend>
+      <p className="payment-provider-status">
+        {status?.configured
+          ? `Credentials saved${status.environment ? ` for ${status.environment}` : ''}. Secret values cannot be viewed again.`
+          : 'Not configured'}
+      </p>
+      <label className="editor-field">
+        <span>Account environment</span>
+        <select value={environment} onChange={(event) => setEnvironment(event.target.value)}>
+          <option value="sandbox">Sandbox / test</option>
+          <option value="live">Live</option>
+        </select>
+      </label>
+      <div className="payment-provider-fields">
+        {definition.fields.map(([key, label]) => (
+          <label className="editor-field" key={key}>
+            <span>{label}</span>
+            <input
+              type="password"
+              autoComplete="new-password"
+              maxLength={2048}
+              value={credentials[key] ?? ''}
+              placeholder={status?.configured ? 'Enter a new value to replace the saved one' : ''}
+              onChange={(event) => setCredentials((current) => ({ ...current, [key]: event.target.value }))}
+            />
+          </label>
+        ))}
+      </div>
+      <div className="payment-provider-actions">
+        <button className="button button-dark" type="button" disabled={isSaving} onClick={save}>
+          {isSaving ? <><LoaderCircle className="spinner" size={15} /> Saving securely…</> : 'Save credentials'}
+        </button>
+        {status?.configured && (
+          <button className="editor-remove-link" type="button" disabled={isSaving} onClick={() => onDelete(provider)}>
+            <Trash2 size={15} /> Remove credentials
+          </button>
+        )}
+      </div>
+    </fieldset>
+  );
+}
+
+function PaymentsFields({
+  value,
+  paymentTermsUrl,
+  onChange,
+  onPaymentTermsUrlChange,
+  providerStatuses,
+  onSaveCredentials,
+  onDeleteCredentials,
+  savingProvider,
+}) {
+  const providers = [
+    { key: 'flutterwave', label: 'Flutterwave mobile money' },
+    { key: 'paypal', label: 'PayPal' },
+    { key: 'pesapal', label: 'Pesapal' },
+    { key: 'mtn_momo', label: 'MTN Mobile Money (direct)' },
+    { key: 'airtel_money', label: 'Airtel Money (direct)' },
+  ];
+
+  function toggleProvider(provider, enabled) {
+    const enabledProviders = enabled
+      ? [...new Set([...value.enabledProviders, provider])]
+      : value.enabledProviders.filter((item) => item !== provider);
+    onChange({ ...value, enabledProviders });
+  }
+
+  return (
+    <div className="payments-editor">
+      <div className="editor-object">
+        <label className="editor-field">
+          <span>Registration and paperwork fee (UGX)</span>
+          <input
+            type="number"
+            min="1"
+            max="1000000000"
+            step="1"
+            value={value.feeUgx}
+            onChange={(event) => onChange({ ...value, feeUgx: event.target.value === '' ? '' : Number(event.target.value) })}
+          />
+        </label>
+        <label className="editor-field">
+          <span>Published fee and refund terms URL</span>
+          <input
+            type="url"
+            value={paymentTermsUrl}
+            placeholder="https://yourdomain.com/registration-terms"
+            onChange={(event) => onPaymentTermsUrlChange(event.target.value)}
+          />
+        </label>
+      </div>
+      <label className="editor-field">
+        <span>Payment, refund, and service terms</span>
+        <textarea
+          rows={6}
+          maxLength={12000}
+          value={value.terms}
+          placeholder="Describe the fee, what it covers, refunds, and what applicants should expect."
+          onChange={(event) => onChange({ ...value, terms: event.target.value })}
+        />
+      </label>
+      <p className="payment-editor-note">The public site converts this UGX fee to USD using the current exchange rate. Mobile money is charged in UGX. The final amount and currency are recorded before checkout.</p>
+      <div className="payment-provider-section">
+        <div className="header-links-heading">
+          <div>
+            <h2>Payment methods</h2>
+            <p>Enable only methods with verified merchant accounts and saved credentials.</p>
+          </div>
+        </div>
+        <div className="payment-method-options">
+          {providers.map((provider) => {
+            const configured = providerStatuses[provider.key]?.configured === true;
+            return (
+              <label className="payment-method-option" key={provider.key}>
+                <input
+                  type="checkbox"
+                  checked={value.enabledProviders.includes(provider.key)}
+                  disabled={!configured && !value.enabledProviders.includes(provider.key)}
+                  onChange={(event) => toggleProvider(provider.key, event.target.checked)}
+                />
+                <span>{provider.label}{!configured
+                  ? provider.key === 'flutterwave'
+                    ? ' — configure Supabase function secrets first'
+                    : ' — configure credentials below first'
+                  : ''}</span>
+              </label>
+            );
+          })}
+        </div>
+        <p className="payment-editor-note">PayPal supports USD. Pesapal supports UGX and USD when enabled on the merchant account. Direct MTN and Airtel collections require UGX and a registered merchant account.</p>
+      </div>
+      <div className="payment-provider-section">
+        <div className="header-links-heading">
+          <div>
+            <h2>Secure provider credentials</h2>
+            <p>Credentials are encrypted by the server, never sent back to this page, and never stored in published website content.</p>
+          </div>
+        </div>
+        <div className="payment-provider-list">
+          {Object.keys(paymentCredentialFields).map((provider) => (
+            <ProviderCredentialForm
+              key={provider}
+              provider={provider}
+              status={providerStatuses[provider]}
+              onSave={onSaveCredentials}
+              onDelete={onDeleteCredentials}
+              isSaving={savingProvider === provider}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ContentFields({ value, path = [], onChange }) {
   if (Array.isArray(value)) {
     return (
@@ -427,6 +605,64 @@ export default function Admin() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [uploadingRoleIndex, setUploadingRoleIndex] = useState(null);
   const [uploadingTeamIndex, setUploadingTeamIndex] = useState(null);
+  const [providerStatuses, setProviderStatuses] = useState({});
+  const [savingProvider, setSavingProvider] = useState(null);
+
+  async function refreshProviderStatuses() {
+    if (!supabase) return false;
+    const { data, error } = await supabase.functions.invoke('payment-credentials', {
+      body: { action: 'status' },
+    });
+    if (error || !Array.isArray(data?.providers)) {
+      setErrorMessage('Secure payment credential settings are unavailable. Deploy the payment-credentials function and set its encryption key.');
+      return false;
+    }
+    setProviderStatuses(Object.fromEntries(data.providers.map((item) => [item.provider, item])));
+    return true;
+  }
+
+  async function handleSaveProviderCredentials(provider, credentials) {
+    if (!supabase || !isAdmin) return false;
+    setSavingProvider(provider);
+    setErrorMessage('');
+    setMessage('');
+    const { error } = await supabase.functions.invoke('payment-credentials', {
+      body: { action: 'save', provider, credentials },
+    });
+    if (error) {
+      setErrorMessage('Credentials could not be saved securely. Check the Supabase function setup and required credential fields.');
+      setSavingProvider(null);
+      return false;
+    }
+    await refreshProviderStatuses();
+    setMessage('Provider credentials saved securely. Enable the payment method and save changes to publish it.');
+    setSavingProvider(null);
+    return true;
+  }
+
+  async function handleDeleteProviderCredentials(provider) {
+    if (!supabase || !isAdmin) return;
+    setSavingProvider(provider);
+    setErrorMessage('');
+    setMessage('');
+    const { error } = await supabase.functions.invoke('payment-credentials', {
+      body: { action: 'delete', provider },
+    });
+    if (error) {
+      setErrorMessage('Credentials could not be removed. Please try again.');
+    } else {
+      await refreshProviderStatuses();
+      setContent((current) => ({
+        ...current,
+        payments: {
+          ...current.payments,
+          enabledProviders: current.payments.enabledProviders.filter((item) => item !== provider),
+        },
+      }));
+      setMessage('Provider credentials removed. The payment method has been disabled locally; save changes to publish.');
+    }
+    setSavingProvider(null);
+  }
 
   useEffect(() => {
     if (!supabase) {
@@ -462,6 +698,7 @@ export default function Admin() {
         } else {
           setIsAdmin(true);
           if (contentResult.data?.content) setContent(normalizeSiteContent(contentResult.data.content));
+          await refreshProviderStatuses();
         }
       }
       setIsLoading(false);
@@ -509,6 +746,7 @@ export default function Admin() {
       setIsAdmin(true);
       setContent(normalizeSiteContent(contentResult.data?.content ?? defaultSiteContent));
       setPassword('');
+      await refreshProviderStatuses();
     }
     setIsLoading(false);
   }
@@ -566,6 +804,10 @@ export default function Admin() {
     event.preventDefault();
     if (!supabase || !isAdmin) return;
     const termsUrl = content.paymentTermsUrl.trim();
+    if (activeSection === 'payments' && !termsUrl) {
+      setErrorMessage('Publish the fee and refund terms page over HTTPS and add its URL before saving payment settings.');
+      return;
+    }
     if (termsUrl) {
       try {
         if (new URL(termsUrl).protocol !== 'https:') throw new Error();
@@ -573,6 +815,21 @@ export default function Admin() {
         setErrorMessage('Enter a complete HTTPS link to the published fee and refund terms.');
         return;
       }
+    }
+    if (!Number.isSafeInteger(content.payments.feeUgx) ||
+        content.payments.feeUgx < 1 ||
+        content.payments.feeUgx > 1_000_000_000) {
+      setErrorMessage('Enter a whole-number UGX fee between 1 and 1,000,000,000.');
+      return;
+    }
+    if (activeSection === 'payments' &&
+        content.payments.enabledProviders.some((provider) => !providerStatuses[provider]?.configured)) {
+      setErrorMessage('Save valid provider credentials before enabling that payment method.');
+      return;
+    }
+    if (!content.payments.enabledProviders.length) {
+      setErrorMessage('Enable at least one configured payment method before publishing.');
+      return;
     }
 
     const invalidLink = content.navigation.links.find(({ label, href }) =>
@@ -843,6 +1100,17 @@ export default function Admin() {
                     onUploadImage={handleTeamImageUpload}
                     uploadingTeamIndex={uploadingTeamIndex}
                   />
+                ) : activeSection === 'payments' ? (
+                  <PaymentsFields
+                    value={content.payments}
+                    paymentTermsUrl={content.paymentTermsUrl}
+                    onChange={(payments) => setContent((current) => ({ ...current, payments }))}
+                    onPaymentTermsUrlChange={(paymentTermsUrl) => setContent((current) => ({ ...current, paymentTermsUrl }))}
+                    providerStatuses={providerStatuses}
+                    onSaveCredentials={handleSaveProviderCredentials}
+                    onDeleteCredentials={handleDeleteProviderCredentials}
+                    savingProvider={savingProvider}
+                  />
                 ) : (
                   <ContentFields
                     value={content[activeSection]}
@@ -853,8 +1121,8 @@ export default function Admin() {
                 </section>
               </ContentSectionBoundary>
               <div className="editor-actions">
-                <p>Edits are published when you save. The UGX 150,000 fee and job categories used for payment records are fixed settings.</p>
-                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo || uploadingRoleIndex !== null || uploadingTeamIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
+                <p>Website copy, the UGX fee, terms, and enabled payment methods are published when you save. Each payment records its provider, amount, and currency.</p>
+                <button className="button button-dark" type="submit" disabled={isSaving || savingProvider !== null || isUploadingLogo || uploadingRoleIndex !== null || uploadingTeamIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
               </div>
             </form>
           </>
