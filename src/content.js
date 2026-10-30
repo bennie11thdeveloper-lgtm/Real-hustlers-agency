@@ -11,6 +11,8 @@ const defaultOpportunityRoles = [
   { label: 'Machine operators', detail: 'Equipment · Production · Skilled trades', image: machineOperatorImage },
 ];
 
+export const defaultOpportunityImages = defaultOpportunityRoles.map((role) => role.image);
+
 export const defaultSiteContent = {
   navigation: {
     logo: siteLogo,

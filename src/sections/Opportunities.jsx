@@ -1,4 +1,5 @@
 import { ArrowRight, MoveUpRight } from 'lucide-react';
+import { defaultOpportunityImages } from '../content.js';
 import './Opportunities.css';
 
 export default function Opportunities({ content, roles, onApply }) {
@@ -17,7 +18,17 @@ export default function Opportunities({ content, roles, onApply }) {
             onClick={() => onApply(role.label)}
             aria-label={`${role.label}: ${role.detail}. ${content.roleAction}`}
           >
-            <img className="role-image" src={role.image} alt="" />
+            <img
+              className="role-image"
+              src={role.image || defaultOpportunityImages[index % defaultOpportunityImages.length]}
+              alt=""
+              onError={(event) => {
+                const fallback = defaultOpportunityImages[index % defaultOpportunityImages.length];
+                if (event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+                  event.currentTarget.src = fallback;
+                }
+              }}
+            />
             <span className="role-card-content">
               <span className="role-top"><span>{role.number} / ROLE</span></span>
               <span className="role-card-copy">

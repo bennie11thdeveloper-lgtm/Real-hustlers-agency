@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash2, Upload } from 'lucide-react';
 import siteLogo from '../Editz/20261014_121743.jpg';
-import { defaultSiteContent, normalizeSiteContent } from './content.js';
+import { defaultOpportunityImages, defaultSiteContent, normalizeSiteContent } from './content.js';
 import { supabase } from './lib/supabase.js';
 import AdminLogin from './sections/AdminLogin.jsx';
 
@@ -177,7 +177,16 @@ function OpportunityFields({ value, onChange, onUploadImage, uploadingRoleIndex 
               <div className="opportunity-image-editor">
                 <span className="editor-field-label">Card image</span>
                 <div className="opportunity-image-controls">
-                  <img src={role.image || defaultSiteContent.opportunities.roles[index % defaultSiteContent.opportunities.roles.length].image} alt="" />
+                  <img
+                    src={role.image || defaultOpportunityImages[index % defaultOpportunityImages.length]}
+                    alt=""
+                    onError={(event) => {
+                      const fallback = defaultOpportunityImages[index % defaultOpportunityImages.length];
+                      if (event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+                        event.currentTarget.src = fallback;
+                      }
+                    }}
+                  />
                   <label className="button button-dark editor-upload-button" htmlFor={`opportunity-image-${index}`}>
                     {uploadingRoleIndex === index
                       ? <><LoaderCircle className="spinner" size={15} /> Uploading…</>
@@ -644,43 +653,6 @@ export default function Admin() {
       return;
     }
 
-    async function handleTeamImageUpload(index, event) {
-      const [file] = event.target.files ?? [];
-      event.target.value = '';
-      if (!file || !supabase || !isAdmin) return;
-      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-        setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
-        return;
-      }
-
-      setUploadingTeamIndex(index);
-      setErrorMessage('');
-      setMessage('');
-      const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
-      const objectPath = `team-portraits/${crypto.randomUUID()}.${extension}`;
-      try {
-        const { error } = await supabase.storage
-          .from('site-assets')
-          .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
-        if (error) throw error;
-        const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
-        setContent((current) => ({
-          ...current,
-          about: {
-            ...current.about,
-            team: current.about.team.map((member, memberIndex) =>
-              memberIndex === index ? { ...member, image: data.publicUrl } : member,
-            ),
-          },
-        }));
-        setMessage('Portrait uploaded. Save changes to publish it.');
-      } catch {
-        setErrorMessage('Portrait upload failed. Check the site-assets storage setup and try again.');
-      } finally {
-        setUploadingTeamIndex(null);
-      }
-    }
-
     setUploadingRoleIndex(index);
     setErrorMessage('');
     setMessage('');
@@ -706,6 +678,43 @@ export default function Admin() {
       setErrorMessage('Image upload failed. Check the site-assets storage setup and try again.');
     } finally {
       setUploadingRoleIndex(null);
+    }
+  }
+
+  async function handleTeamImageUpload(index, event) {
+    const [file] = event.target.files ?? [];
+    event.target.value = '';
+    if (!file || !supabase || !isAdmin) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
+      return;
+    }
+
+    setUploadingTeamIndex(index);
+    setErrorMessage('');
+    setMessage('');
+    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+    const objectPath = `team-portraits/${crypto.randomUUID()}.${extension}`;
+    try {
+      const { error } = await supabase.storage
+        .from('site-assets')
+        .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
+      setContent((current) => ({
+        ...current,
+        about: {
+          ...current.about,
+          team: current.about.team.map((member, memberIndex) =>
+            memberIndex === index ? { ...member, image: data.publicUrl } : member,
+          ),
+        },
+      }));
+      setMessage('Portrait uploaded. Save changes to publish it.');
+    } catch {
+      setErrorMessage('Portrait upload failed. Check the site-assets storage setup and try again.');
+    } finally {
+      setUploadingTeamIndex(null);
     }
   }
 
