@@ -54,7 +54,7 @@ Do this once during launch; after setup, routine copy updates happen at `https:/
 
 1. Open `https://YOUR_DOMAIN/admin`.
 2. Sign in with the owner/editor email and password.
-3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. In **Opportunities**, add or delete cards, edit job titles and descriptions, and upload or change each card image. Other sections include the homepage hero, agency story, application form wording, and buttons.
+3. Choose a section to edit. In **Header**, upload the logo and add, remove, or update navigation link text and destinations. In **Opportunities**, add or delete cards, edit job titles and descriptions, and upload or change each card image. In **About us**, edit the agency copy and add team members with their names, positions, and portrait images.
 4. Update **Payment Terms Url** with the agency's real, published `https://` terms page. Review its fee, service description, refund terms, and applicant protections before publishing.
 5. Select **Save changes**, then open or refresh the public site to review the live changes. Use **View public site** to preview it. Use **Forgot your password?** on the sign-in screen to recover your admin password by email.
 

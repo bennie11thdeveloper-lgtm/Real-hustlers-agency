@@ -211,6 +211,107 @@ function OpportunityFields({ value, onChange, onUploadImage, uploadingRoleIndex 
   );
 }
 
+function AboutFields({ value, onChange, onUploadImage, uploadingTeamIndex }) {
+  const { team, ...aboutCopy } = value;
+
+  function updateMember(index, changes) {
+    onChange({
+      ...value,
+      team: team.map((member, memberIndex) =>
+        memberIndex === index ? { ...member, ...changes } : member,
+      ),
+    });
+  }
+
+  return (
+    <div className="about-editor">
+      <ContentFields
+        value={aboutCopy}
+        path={['about']}
+        onChange={(path, fieldValue) => onChange(updateContentAtPath(value, path.slice(1), fieldValue))}
+      />
+      <div className="team-editor">
+        <div className="header-links-heading">
+          <div>
+            <h2>Our Team</h2>
+            <p>Add each person’s name, position, and portrait. Portraits can be PNG, JPG, or WebP up to 2 MB.</p>
+          </div>
+          <button
+            className="editor-add-link"
+            type="button"
+            disabled={uploadingTeamIndex !== null}
+            onClick={() => onChange({ ...value, team: [...team, { name: '', position: '', image: '' }] })}
+          >
+            <Plus size={15} /> Add team member
+          </button>
+        </div>
+        <div className="team-editor-list">
+          {team.map((member, index) => (
+            <fieldset className="team-editor-card" key={`team-member-${index}`}>
+              <legend>Team member {index + 1}</legend>
+              <div className="team-editor-fields">
+                <label className="editor-field">
+                  <span>Name</span>
+                  <input
+                    type="text"
+                    maxLength={120}
+                    value={member.name}
+                    placeholder="Full name"
+                    onChange={(event) => updateMember(index, { name: event.target.value })}
+                  />
+                </label>
+                <label className="editor-field">
+                  <span>Position</span>
+                  <input
+                    type="text"
+                    maxLength={120}
+                    value={member.position}
+                    placeholder="e.g. Agency Director"
+                    onChange={(event) => updateMember(index, { position: event.target.value })}
+                  />
+                </label>
+                <div className="team-image-editor">
+                  <span className="editor-field-label">Portrait</span>
+                  <div className="team-image-controls">
+                    {member.image
+                      ? <img src={member.image} alt="" />
+                      : <div className="team-image-placeholder" aria-hidden="true">
+                        {member.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase()}
+                      </div>}
+                    <label className="button button-dark editor-upload-button" htmlFor={`team-image-${index}`}>
+                      {uploadingTeamIndex === index
+                        ? <><LoaderCircle className="spinner" size={15} /> Uploading…</>
+                        : <><Upload size={15} /> {member.image ? 'Change portrait' : 'Add portrait'}</>}
+                    </label>
+                    <input
+                      id={`team-image-${index}`}
+                      className="visually-hidden"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      disabled={uploadingTeamIndex !== null}
+                      onChange={(event) => onUploadImage(index, event)}
+                    />
+                  </div>
+                </div>
+                <button
+                  className="editor-remove-link opportunity-remove-card"
+                  type="button"
+                  disabled={uploadingTeamIndex !== null}
+                  aria-label={`Delete ${member.name || `team member ${index + 1}`}`}
+                  onClick={() => onChange({ ...value, team: team.filter((_, memberIndex) => memberIndex !== index) })}
+                >
+                  <Trash2 size={16} /> Delete member
+                </button>
+              </div>
+            </fieldset>
+          ))}
+          {team.length === 0 && <p className="header-links-empty">No team members yet. Add a person to create the Our Team section.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ContentFields({ value, path = [], onChange }) {
   if (Array.isArray(value)) {
     return (
@@ -283,6 +384,7 @@ export default function Admin() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [uploadingRoleIndex, setUploadingRoleIndex] = useState(null);
+  const [uploadingTeamIndex, setUploadingTeamIndex] = useState(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -455,6 +557,12 @@ export default function Admin() {
       setErrorMessage('Each opportunity must have a unique job title.');
       return;
     }
+    if (content.about.team.some((member) =>
+      !member.name.trim() || !member.position.trim() || !member.image,
+    )) {
+      setErrorMessage('Each team member needs a name, position, and portrait before you can save.');
+      return;
+    }
 
     setIsSaving(true);
     setMessage('');
@@ -467,6 +575,14 @@ export default function Admin() {
           ...role,
           label: role.label.trim(),
           detail: role.detail.trim(),
+        })),
+      },
+      about: {
+        ...content.about,
+        team: content.about.team.map((member) => ({
+          ...member,
+          name: member.name.trim(),
+          position: member.position.trim(),
         })),
       },
     };
@@ -526,6 +642,43 @@ export default function Admin() {
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
       setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
       return;
+    }
+
+    async function handleTeamImageUpload(index, event) {
+      const [file] = event.target.files ?? [];
+      event.target.value = '';
+      if (!file || !supabase || !isAdmin) return;
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+        setErrorMessage('Choose a PNG, JPG, or WebP image up to 2 MB.');
+        return;
+      }
+
+      setUploadingTeamIndex(index);
+      setErrorMessage('');
+      setMessage('');
+      const extension = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+      const objectPath = `team-portraits/${crypto.randomUUID()}.${extension}`;
+      try {
+        const { error } = await supabase.storage
+          .from('site-assets')
+          .upload(objectPath, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+        if (error) throw error;
+        const { data } = supabase.storage.from('site-assets').getPublicUrl(objectPath);
+        setContent((current) => ({
+          ...current,
+          about: {
+            ...current.about,
+            team: current.about.team.map((member, memberIndex) =>
+              memberIndex === index ? { ...member, image: data.publicUrl } : member,
+            ),
+          },
+        }));
+        setMessage('Portrait uploaded. Save changes to publish it.');
+      } catch {
+        setErrorMessage('Portrait upload failed. Check the site-assets storage setup and try again.');
+      } finally {
+        setUploadingTeamIndex(null);
+      }
     }
 
     setUploadingRoleIndex(index);
@@ -638,6 +791,13 @@ export default function Admin() {
                     onUploadImage={handleOpportunityImageUpload}
                     uploadingRoleIndex={uploadingRoleIndex}
                   />
+                ) : activeSection === 'about' ? (
+                  <AboutFields
+                    value={content.about}
+                    onChange={(about) => setContent((current) => ({ ...current, about }))}
+                    onUploadImage={handleTeamImageUpload}
+                    uploadingTeamIndex={uploadingTeamIndex}
+                  />
                 ) : (
                   <ContentFields
                     value={content[activeSection]}
@@ -648,7 +808,7 @@ export default function Admin() {
               </section>
               <div className="editor-actions">
                 <p>Edits are published when you save. The UGX 150,000 fee and job categories used for payment records are fixed settings.</p>
-                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo || uploadingRoleIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
+                <button className="button button-dark" type="submit" disabled={isSaving || isUploadingLogo || uploadingRoleIndex !== null || uploadingTeamIndex !== null}>{isSaving ? <><LoaderCircle className="spinner" size={16} /> Saving…</> : <>Save changes <Save size={16} /></>}</button>
               </div>
             </form>
           </>

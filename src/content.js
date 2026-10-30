@@ -79,6 +79,9 @@ export const defaultSiteContent = {
     action: 'Let’s talk about your goals',
     footerLeft: 'REAL PEOPLE. REAL AMBITION.',
     footerRight: 'KAMPALA, UGANDA',
+    teamTitle: 'Our Team',
+    teamIntroduction: 'Meet the people behind our work.',
+    team: [],
   },
   closing: {
     eyebrow: 'YOUR STORY, YOUR NEXT STEP',
@@ -166,6 +169,17 @@ export function normalizeSiteContent(content) {
           : defaultOpportunityRoles[index % defaultOpportunityRoles.length].image,
       }))
     : defaultOpportunityRoles;
+  const about = content?.about && typeof content.about === 'object'
+    ? content.about
+    : {};
+  const savedTeam = Array.isArray(about.team)
+    ? about.team.filter((member) =>
+      member &&
+      typeof member.name === 'string' &&
+      typeof member.position === 'string' &&
+      (typeof member.image === 'string' || member.image == null),
+    ).map((member) => ({ ...member, image: member.image ?? '' }))
+    : [];
 
   return {
     ...defaultSiteContent,
@@ -179,6 +193,11 @@ export function normalizeSiteContent(content) {
       ...defaultSiteContent.opportunities,
       ...opportunities,
       roles: savedRoles,
+    },
+    about: {
+      ...defaultSiteContent.about,
+      ...about,
+      team: savedTeam,
     },
   };
 }

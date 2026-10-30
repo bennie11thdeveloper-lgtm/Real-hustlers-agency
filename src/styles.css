@@ -152,6 +152,17 @@ h1, h2 { font-family: var(--display); }
 .opportunity-image-controls .editor-upload-button { margin-top: 0; }
 .opportunity-remove-card { width: fit-content; height: 39px; min-height: 39px; padding: 0 11px; gap: 7px; }
 .editor-add-link:disabled, .editor-remove-link:disabled { cursor: not-allowed; opacity: .58; }
+.about-editor { display: grid; gap: 28px; }
+.team-editor { display: grid; gap: 14px; padding-top: 21px; border-top: 1px solid #eceee7; }
+.team-editor-list { display: grid; gap: 12px; }
+.team-editor-card { min-width: 0; margin: 0; padding: 14px; border: 1px solid #e8eadf; }
+.team-editor-card legend { padding: 0 6px; color: #7c8d60; font-size: 9px; font-weight: 700; }
+.team-editor-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 14px; }
+.team-image-editor { display: grid; align-content: start; gap: 8px; }
+.team-image-controls { display: flex; align-items: center; gap: 12px; }
+.team-image-controls > img, .team-image-placeholder { width: 70px; height: 70px; flex: none; border: 2px solid #e4e9d9; border-radius: 50%; object-fit: cover; background: #e8eddd; }
+.team-image-placeholder { display: grid; place-items: center; color: #496142; font-size: 18px; font-weight: 700; }
+.team-image-controls .editor-upload-button { margin-top: 0; }
 .editor-array, .editor-group { min-width: 0; }
 .editor-array { display: grid; gap: 12px; }
 .editor-group { margin: 0; padding: 13px; border: 1px solid #e8eadf; }
@@ -191,6 +202,7 @@ h1, h2 { font-family: var(--display); }
   .content-editor { padding: 16px; }
   .editor-object { grid-template-columns: 1fr; }
   .opportunity-editor-fields { grid-template-columns: 1fr; }
+  .team-editor-fields { grid-template-columns: 1fr; }
   .header-link-row { grid-template-columns: minmax(0,1fr) 38px; }
   .header-link-row .editor-field:nth-of-type(2) { grid-column: 1 / -1; grid-row: 2; }
   .header-link-row .editor-remove-link { grid-column: 2; grid-row: 1; }
